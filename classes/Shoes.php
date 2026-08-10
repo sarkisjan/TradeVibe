@@ -2,7 +2,7 @@
 class Shoes extends Validation implements Product {
     public function validateForm($post) {
         
-        // 1. БЕЗБЕДНА ПРОВЕРКА ЗА ЗАЛИХАТА: Проверуваме дали пристигнале штиклирани големини
+        // БЕЗБЕДНА ПРОВЕРКА ЗА ЗАЛИХАТА: Проверуваме дали пристигнале штиклирани големини
         $hasStockData = false;
         
         if (isset($post->stockData)) {
@@ -19,7 +19,7 @@ class Shoes extends Validation implements Product {
             $this->addError('subcategory', "Please select at least one footwear size checkbox layout with its available stock input quantity filled.");
         }
         
-        // 2. БЕЗБЕДНА ПРОВЕРКА НА ОСНОВНИТЕ ПОЛИЊА (ФИКС: Тргната е 'struppercase' грешката)
+        // БЕЗБЕДНА ПРОВЕРКА НА ОСНОВНИТЕ ПОЛИЊА
         $fields = ['sku', 'name', 'price'];
         
         foreach($fields as $field) {

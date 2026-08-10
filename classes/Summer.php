@@ -2,7 +2,7 @@
 class Summer extends Validation implements Product {
     public function validateForm($post) {
         
-        // 1. NESTED PAYLOAD SAFE-GUARD: Detect stock items arriving either as array index maps or object parameters
+        
         $hasStockData = false;
         
         if (isset($post->stockData)) {
@@ -19,7 +19,7 @@ class Summer extends Validation implements Product {
             $this->addError('subcategory', "Please select at least one apparel size configuration check-box layout with available inventory stock.");
         }
         
-        // 2. Base parameter mapping validation loop
+        // Base parameter mapping validation loop
         $fields = ['sku', 'name', 'price'];
         
         foreach($fields as $field) {

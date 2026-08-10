@@ -12,8 +12,8 @@ class Database
     protected $tbname;          // Табела за производи
     protected $usersTable;      // Табела за корисници
     protected $cartTable;       // Табела за привремена кошничка
-    protected $ordersTable;     // НОВО: Табела за главни нарачки
-    protected $orderItemsTable; // НОВО: Табела за артикли во нарачките
+    protected $ordersTable;     // Табела за главни нарачки
+    protected $orderItemsTable; // Табела за артикли во нарачките
 
     public $errors = [];
 
@@ -77,7 +77,7 @@ class Database
             $this->errors[] = "Error creating users table: " . mysqli_error($conn);
         }
 
-        // ТАБЕЛА ЗА ПРОИЗВОДИ (АЖУРИРАНА СО КАТЕГОРИИ, ОПИС, ПОПУСТ И CASCADE АДМИН ИД)
+        // ТАБЕЛА ЗА ПРОИЗВОДИ
         $sql_products = "CREATE TABLE IF NOT EXISTS `$this->tbname` (
                 `id` INT(10) NOT NULL AUTO_INCREMENT,
                 `admin_id` INT(11) NOT NULL DEFAULT 1,
@@ -162,7 +162,7 @@ class Database
         if (!mysqli_query($conn, $sql_order_items)) {
             $this->errors[] = "Error creating order_items table: " . mysqli_error($conn);
         }
-        // 8. ТАБЕЛА 8: Следење на количини по поединечни големини (Stock Inventory)
+        // Следење на количини по поединечни големини (Stock Inventory)
         $sql_stock = "CREATE TABLE IF NOT EXISTS `product_stock` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `product_id` INT(10) NOT NULL,
