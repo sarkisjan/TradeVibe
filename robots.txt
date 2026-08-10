@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /index.php
+Allow: /styles.css
+Allow: /scripts/
+Allow: /uploads/
+
+# Безбедносен гард: Им забрануваме на роботите да влегуваат во внатрешните логички фајлови
+Disallow: /includes/
+Disallow: /classes/
+Disallow: /cart_handler.php
+Disallow: /checkout.php
+Disallow: /edit_price.php
+Disallow: /updating_price.php
+Disallow: /update_stock_matrix.php
+
+# Патека до твојата мапа на сајтот
+Sitemap: http://localhost/TradeVibe/sitemap.xml

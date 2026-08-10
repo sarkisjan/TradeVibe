@@ -1,0 +1,15 @@
+# Игнорирање на оперативни системи и VS Code приватен кеш
+.vscode/
+.DS_Store
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+
+# Игнорирање на привремените кориснички слики што се прикачуваат при тест купувања
+# uploads/*
+# !uploads/default-product.png
+# !uploads/default-og-share.png
+
+# Игнорирање на грешки и логови од XAMPP
+*.log
+npm-debug.log*

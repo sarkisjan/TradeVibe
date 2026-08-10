@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://sitemaps.org">
+   <url>
+   <loc>http://localhost/TradeVibe/index.php</loc>
+      <lastmod>2026-08-10</lastmod>
+      <changefreq>daily</changefreq>
+      <priority>1.00</priority>
+   </url>
+   <url>
+      <loc>http://localhost/TradeVibe/login.php</loc>
+      <lastmod>2026-08-10</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.50</priority>
+   </url>
+   <url>
+      <loc>http://localhost/TradeVibe/signup.php</loc>
+      <lastmod>2026-08-10</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.50</priority>
+   </url>
+</urlset>
