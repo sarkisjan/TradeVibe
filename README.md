@@ -42,7 +42,7 @@ The storage layer enforces 1-to-Many strict relational data dependencies:
 
 1. Clone this repository directly inside your XAMPP server environment:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/sarkisjan/TradeVibe
    ```
 2. Import the provided `tradevibe_backup.sql` file backup configuration directly inside your local phpMyAdmin dashboard panel
 3. Access the demo application using the embedded test environments specified within the live `login.php` preview console panel.
