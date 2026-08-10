@@ -1,33 +1,6 @@
 
 <?php
 
-// -- 1. ДОДАВАЊЕ НА СЕКУНДАРНИОТ ПРОДАВАЧ (Seller 2)
-// INSERT INTO `users` (`username`, `first_name`, `last_name`, `email`, `password`, `address`, `role`, `is_verified`) 
-// VALUES (
-//     'seller2', 
-//     'Marko', 
-//     'Petrov', 
-//     'seller2@eshop.com', 
-//     '$2y$10$7R3U2w/QpMR3YFf8XwP8Ie4pAexlG7S7pM3Llz.Uv1nKj2XQ.pJWq', -- Хеширана лозинка за 'seller123'
-//     'Partizanska 45, Skopje', 
-//     'admin', 
-//     1
-// );
-
-// -- 2. ДОДАВАЊЕ НА СЕКУНДАРНИОТ КУПУВАЧ (Customer 2)
-// INSERT INTO `users` (`username`, `first_name`, `last_name`, `email`, `password`, `address`, `role`, `is_verified`) 
-// VALUES (
-//     'buyer2', 
-//     'Elena', 
-//     'Stojanova', 
-//     'buyer2@eshop.com', 
-//     '$2y$10$9v1P3d.L/Z2zZ4kK7F8uOu5oY6pU3zH5XwZ9nKj4XQ.pJWq.m3Llz', -- Хеширана лозинка за 'buyer123'
-//     'Jane Sandanski 12, Bitola', 
-//     'user', 
-//     1
-// );
-
-
 class Database
 {
     private $servername;
