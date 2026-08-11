@@ -6,6 +6,7 @@ require_once "classes/Currency.php";
 $process = new Process();
 $cart_items = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
+// Clear the cart if requested
 if (isset($_GET['action']) && $_GET['action'] === 'clear') {
     $_SESSION['cart'] = [];
     header("Location: view_cart.php");
@@ -15,6 +16,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'clear') {
 $product_ids = array_keys($cart_items);
 $products = [];
 
+// Fetch product details for items currently inside the cart session
 if (!empty($product_ids)) {
     $products = $process->getCartProducts($product_ids);
 }
@@ -23,7 +25,7 @@ $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'USD';
 $currency_symbol = Currency::getSymbol($currency);
 
 $total_price = 0;
-$missing_size_detected = false; // Сигурносен флег
+$missing_size_detected = false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +42,7 @@ $missing_size_detected = false; // Сигурносен флег
     <header>
         <div class="navbar">
             <div class="brand-logo-zone" onclick="window.location.href='index.php';">
-                <!-- СВГ Икона која визуелно претставува брза трговија, пазар и размена на стока -->
+                <!-- SVG Icon representing fast market trading and exchange -->
                 <svg class="brand-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="16 3 21 3 21 8"></polyline>
                     <line x1="4" y1="20" x2="21" y2="4"></line>
@@ -61,6 +63,7 @@ $missing_size_detected = false; // Сигурносен флег
     </header>
 
     <div class="cart-container">
+        <!-- Clean layout with classes instead of inline properties -->
         <h2 style="text-align: left; font-size: 22px; font-weight: 700; color: #1a202c;">Your Selected Items</h2>
 
         <?php if (empty($products)): ?>
@@ -72,7 +75,7 @@ $missing_size_detected = false; // Сигурносен флег
                         <th>Image</th>
                         <th>SKU</th>
                         <th>Product Name</th>
-                        <th>Selected Size</th> <!-- ДОДАДЕНА КОЛОНА -->
+                        <th>Selected Size</th> <!-- Size Tracking Column -->
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Subtotal</th>
@@ -83,23 +86,24 @@ $missing_size_detected = false; // Сигурносен флег
                     <?php foreach ($products as $product):
                         $id = $product['id'];
 
-                        // Безбедно читање на структурата од новата сесија
+                        // Safely extract cart state properties
                         $qty = isset($cart_items[$id]['qty']) ? $cart_items[$id]['qty'] : (is_array($cart_items[$id]) ? 1 : $cart_items[$id]);
                         $size = isset($cart_items[$id]['size']) ? $cart_items[$id]['size'] : 'Standard';
 
-                        // Проверка за задолжителност на големина (Облека и патики)
+                        // Verify if size configuration is required (Clothing and Footwear)
                         $subLower = isset($product['subcategory']) ? strtolower($product['subcategory']) : '';
                         $isSizeRequired = in_array($subLower, ['shoes', 'clothing', 'summer', 'winter']);
 
                         $size_display_html = "";
                         if ($isSizeRequired && ($size === 'Standard' || empty($size) || $size === '')) {
+                            // Block action trigger flag if a required selection is missing
                             $size_display_html = "<span class='size-error-badge'>⚠️ Not Selected</span>";
                             $missing_size_detected = true; // Се активира кочницата!
                         } else {
                             $size_display_html = "<span class='size-badge'>" . htmlspecialchars($size) . "</span>";
                         }
 
-                        // Чистење и пресметка на цената
+                         // Clean price strings and calculate discount math variations
                         $clean_price = str_replace(['$', ' ', 'den', 'EUR', '€'], '', $product['price']);
                         $item_base_price = floatval($clean_price);
                         $discount = intval($product['discount']);
@@ -126,7 +130,7 @@ $missing_size_detected = false; // Сигурносен флег
                             <td><?php echo htmlspecialchars($product['sku']); ?></td>
                             <td><strong><?php echo htmlspecialchars($product['name']); ?></strong></td>
 
-                            <!-- ПРИКАЗ НА ГОЛЕМИНАТА -->
+                            <!-- SIZE VISUAL MATRIX CELL -->
                             <td><?php echo $size_display_html; ?></td>
 
                             <td><span style="color:#ef4444; font-weight:700;"><?php echo number_format($converted_unit_price, 2) . $currency_symbol; ?></span></td>
@@ -155,7 +159,7 @@ $missing_size_detected = false; // Сигурносен флег
             <div class="cart-summary">
                 <p style="font-size: 20px; color:#1a202c;"><strong>Total Amount: <span id="total-amount-display" style="color: #2cbd6c; font-weight:800;"><?php echo number_format($total_price, 2) . $currency_symbol; ?></span></strong></p>
 
-                <!-- СИГУРНОСНА КОЧНИЦА НА КОРПАТА -->
+                 <!-- SIZE PROTECTIVE GATEWAY SYSTEM BLOCK -->
                 <?php if ($missing_size_detected): ?>
                     <button class="checkout-btn disabled-btn" onclick="alert('Cannot proceed to checkout! One or more items in your cart require a specific size configuration. Please remove the invalid items and re-add them with a selected size from the shop layout.')">CHECKOUT LOCKED</button>
                 <?php else: ?>

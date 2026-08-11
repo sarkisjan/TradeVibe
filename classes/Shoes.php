@@ -1,10 +1,12 @@
 <?php
-class Shoes extends Validation implements Product {
-    public function validateForm($post) {
-        
-        // БЕЗБЕДНА ПРОВЕРКА ЗА ЗАЛИХАТА: Проверуваме дали пристигнале штиклирани големини
+class Shoes extends Validation implements Product
+{
+    public function validateForm($post)
+    {
+
+        // NESTED PAYLOAD SAFE-GUARD: Detect stock items arriving either as array index maps or object parameters
         $hasStockData = false;
-        
+
         if (isset($post->stockData)) {
             $stockDataRaw = $post->stockData;
             if (!empty($stockDataRaw)) {
@@ -18,11 +20,11 @@ class Shoes extends Validation implements Product {
         if (!$hasStockData) {
             $this->addError('subcategory', "Please select at least one footwear size checkbox layout with its available stock input quantity filled.");
         }
-        
+
         // БЕЗБЕДНА ПРОВЕРКА НА ОСНОВНИТЕ ПОЛИЊА
         $fields = ['sku', 'name', 'price'];
-        
-        foreach($fields as $field) {
+
+        foreach ($fields as $field) {
             if (isset($post->$field)) {
                 if (trim($post->$field) === '') {
                     $this->addError($field, "Please provide the product " . $field);
@@ -31,8 +33,7 @@ class Shoes extends Validation implements Product {
                 $this->addError($field, "Please provide the product " . $field);
             }
         }
-        
+
         return $this->errors;
     }
 }
-?>

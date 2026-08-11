@@ -2,44 +2,54 @@
 session_start();
 require_once "includes/autoloader.php";
 
-// Безбедносна кочница: Само Root корисникот има пристап до овој панел
+// Only the root user can access this control panel
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'root') {
     header("Location: login.php");
     exit();
 }
 
+// Connect to the database
 $dbClass = new Database();
 $conn = $dbClass->connect();
 
-// 1. НОВА ОПЦИЈА: ИНСТАНТНА ВЕРИФИКАЦИЈА ОД СТРАНА НА ROOT КОРИСНИКОТ
+// Allow the root user to manually verify an account
 if (isset($_POST['approve_verify_user'])) {
     $uId = intval($_POST['user_id']);
     mysqli_query($conn, "UPDATE `users` SET `is_verified` = 1 WHERE `id` = $uId");
+    // Show a message and return to the user management page
     echo "<script>alert('Account successfully verified and activated within the ecosystem matrix!'); window.location.href='manage_sellers.php';</script>";
     exit();
 }
 
-// 2. БРИШЕЊЕ НА ПРОФИЛ (Продавач или Купувач)
+// Delete a user account and all products belonging to that seller
 if (isset($_POST['delete_user'])) {
     $uId = intval($_POST['user_id']);
+
+    // Remove the seller's products before deleting the user
     mysqli_query($conn, "DELETE FROM `producttable` WHERE `admin_id` = $uId");
     mysqli_query($conn, "DELETE FROM `users` WHERE `id` = $uId");
+    
+    // Return to the user management page
     header("Location: manage_sellers.php");
     exit();
 }
 
-// 3. РЕСЕТИРАЊЕ НА ЛОЗИНКА
+// Allow the root user to reset a user's password
 if (isset($_POST['reset_pwd'])) {
     $uId = intval($_POST['user_id']);
     $raw_custom_password = isset($_POST['custom_password']) ? trim($_POST['custom_password']) : '';
     
+    // Make sure a new password was entered
     if ($raw_custom_password === '') {
         echo "<script>alert('Please type a password inside the input field layouts first!'); window.location.href='manage_sellers.php';</script>";
         exit();
     }
     
+    // Hash the new password before saving it
     $customHashed = password_hash($raw_custom_password, PASSWORD_DEFAULT);
     mysqli_query($conn, "UPDATE `users` SET `password` = '$customHashed' WHERE `id` = $uId");
+    
+    // Show a message and return to the user management page
     echo "<script>alert('Password successfully changed and updated for this profile!'); window.location.href='manage_sellers.php';</script>";
     exit();
 }
@@ -94,17 +104,20 @@ if (isset($_POST['reset_pwd'])) {
                 </thead>
                 <tbody>
                     <?php
-                    // Селектираме апсолутно СИТЕ корисници (и продавачи и купувачи) за рачна верификација од Root
+                   // Get all users except the root user
                     $query = "SELECT * FROM `users` WHERE `role` != 'root' ORDER BY `id` ASC";
                     $res = mysqli_query($conn, $query);
                     
+                    // Show a message if there are no registered users
                     if (mysqli_num_rows($res) === 0):
                         echo "<tr><td colspan='9' style='color:gray;'>No registered users found inside the system infrastructure network.</td></tr>";
                     else:
+                        // Display each registered user
                         while ($user = mysqli_fetch_assoc($res)):
                             $badgeClass = ($user['role'] === 'admin') ? 'role-seller' : 'role-customer';
                             $roleLabel = ($user['role'] === 'admin') ? 'Seller' : 'Customer';
                             
+                            // Set the CSS class and text based on verification status
                             $statusClass = (intval($user['is_verified']) === 1) ? 'status-active' : 'status-pending';
                             $statusLabel = (intval($user['is_verified']) === 1) ? 'Verified' : 'Unverified';
                     ?>
@@ -115,10 +128,10 @@ if (isset($_POST['reset_pwd'])) {
                             <td><strong><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></strong></td>
                             <td style="color:#4a5568;"><?php echo htmlspecialchars($user['email']); ?></td>
                             
-                            <!-- СТАТУС НА ВЕРИФИКАЦИЈА -->
+                            <!-- Show the current account verification status -->
                             <td><span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusLabel; ?></span></td>
                             
-                            <!-- КОПЧЕ ЗА МАНУЕЛНА ВЕРИФИКАЦИЈА ОД СТРАНА НА ROOT -->
+                            <!-- Allow the root user to manually verify an account -->
                             <td>
                                 <?php if (intval($user['is_verified']) !== 1): ?>
                                     <form method="POST" onsubmit="return confirm('Are you sure you want to manually verify and activate this account?');">
@@ -130,7 +143,7 @@ if (isset($_POST['reset_pwd'])) {
                                 <?php endif; ?>
                             </td>
                             
-                            <!-- РЕСЕТИРАЊЕ ЛОЗИНКА -->
+                            <!-- Allow the root user to change the user's password -->
                             <td>
                                 <form method="POST" onsubmit="return confirm('Are you sure you want to change this profile\'s password to the value specified inside the input box?');" style="display: flex; gap: 5px; justify-content: center; align-items: center;">
                                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
@@ -140,7 +153,7 @@ if (isset($_POST['reset_pwd'])) {
                             </td>
                             
                             
-                            <!-- БРИШЕЊЕ ПРОФИЛ -->
+                            <!-- Allow the root user to delete the account -->
                             <td>
                                 <form method="POST" onsubmit="return confirm('CRITICAL WARNING: Are you sure you want to completely delete this seller account? All their products will be wiped out!');">
                                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">

@@ -1,17 +1,17 @@
 <?php
 session_start();
 
-// Логика за промена на валута преку GET барање
+// Change currency and reload the page
 if (isset($_GET['currency'])) {
     $_SESSION['currency'] = $_GET['currency'];
     header("Location: index.php");
     exit();
 }
 
-// Дефолтна валута ако не е избрана е USD
+// Use USD as the default currency
 $selected_currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'USD';
 
-// Безбедносен гард: Ако корисникот воопшто не е логиран, веднаш прати го на најава
+// Redirect users who are not logged in
 if (!isset($_SESSION['user_role'])) {
     header("Location: login.php");
     exit();
@@ -19,6 +19,8 @@ if (!isset($_SESSION['user_role'])) {
 
 $role = $_SESSION['user_role'];
 $current_user_id = $_SESSION['user_id'];
+
+// Get the total number of items in the cart
 $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 ?>
 <!DOCTYPE html>
@@ -28,35 +30,34 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- СЕО МЕТА ТАГОВИ -->
+    <!-- SEO meta tags -->
     <title>TradeVibe Marketplace - Buy Shoes, Clothing & Home Appliances</title>
     <meta name="description" content="Discover the ultimate multi-vendor marketplace at TradeVibe. Explore premium home and garden assets, workout equipment, high-quality footwear, and active apparel with hot discounts.">
     <meta name="keywords" content="e-shop, tradevibe, online market, buy shoes, sports clothing, furniture, home decor, appliances">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="http://localhost/TradeVibe/index.php">
 
-    <!-- OPEN GRAPH ТАГОВИ (За споделување на линкови на социјални мрежи) -->
+    <!-- Open Graph tags for social media sharing -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="TradeVibe Marketplace - Smart Shopping Ecosystem">
     <meta property="og:description" content="Explore and purchase high-quality international brands from top-tier vetted vendors. Secure checkout and realtime stock matrix optimization.">
     <meta property="og:url" content="http://localhost/TradeVibe/index.php">
     <meta property="og:image" content="http://localhost/TradeVibe/uploads/default-og-share.png">
 
-    <!-- Стилски фајлови -->
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body id="bckgrnd">
 
-    <!-- Затемнет слој на позадина кога страничното мени е отворено -->
+    <!-- Dark overlay shown when the sidebar is open -->
     <div class="overlay-bg" id="menuOverlay"></div>
 
-    <!-- СТРАНИЧЕН ПАНЕЛ ЗА КАТЕГОРИИ И НАПРЕДНИ ФИЛТРИ -->
+    <!-- Sidebar with categories and filters -->
     <div class="sidebar-filters" id="sidebarMenu">
         <button class="close-sidebar" id="closeMenuBtn">✕</button>
         <h2 class="sidebar-main-title">Categories & Filters</h2>
 
-        <!-- СОРТИРАЊЕ -->
+        <!-- Product sorting options -->
         <div class="filter-section">
             <h3>Sort By</h3>
             <select id="sortFilter">
@@ -66,19 +67,21 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                 <option value="discount-high">Highest Discount (%)</option>
             </select>
         </div>
+
+        <!-- Show all products -->
         <div class="filter-section">
             <ul class="subcat-list" style="margin: 0; padding: 0; list-style: none;">
                 <li class="allProducts" data-sub="global-all">🌐 All Products Marketplace</li>
             </ul>
         </div>
-        <!-- ГЛАВНА КАТЕГОРИЈА 1: HOME & GARDEN -->
+        <!-- Home and Garden category -->
         <div class="filter-section">
             <h3>Home & Garden</h3>
             <ul class="subcat-list" data-category="Home & Garden">
                 <li data-sub="all" class="active">All Home & Garden</li>
                 <li data-sub="Souvenirs">Souvenirs & Decor</li>
 
-                <!-- МЕБЕЛ СО АКOРДИОН DROPDOWN НАДОЛУ -->
+                <!-- Furniture category with room submenu -->
                 <li data-sub="Furniture-Parent" id="furnitureParentLi" class="furniture-accordion-item">
                     <div class="furniture-trigger-zone">
                         <span>Furniture</span>
@@ -105,7 +108,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             </ul>
         </div>
 
-        <!-- ГЛАВНА КАТЕГОРИЈА 2: SPORTS & RECREATION -->
+        <!-- Sports and Recreation category -->
         <div class="filter-section">
             <h3>Sports & Recreation</h3>
             <ul class="subcat-list" data-category="Sports & Recreation">
@@ -120,7 +123,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             </ul>
         </div>
 
-        <!-- НАПРЕДНИ СПЕЦИФИКАЦИИ -->
+        <!-- Brand filter -->
         <div class="filter-section">
             <h3>Filter By Brand</h3>
             <select id="brandFilter">
@@ -143,6 +146,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
         </div>
 
         <div class="filter-section">
+            <!-- Color filter -->
             <h3>Filter By Color</h3>
             <select id="colorFilter">
                 <option value="all">All Colors</option>
@@ -154,6 +158,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             </select>
         </div>
 
+        <!-- Size filter -->
         <div class="filter-section">
             <h3>Filter By Size</h3>
             <select id="sizeFilter">
@@ -169,6 +174,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             </select>
         </div>
 
+        <!-- Gender filter -->
         <div class="filter-section">
             <h3>Filter By Gender</h3>
             <select id="genderFilter">
@@ -180,23 +186,28 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             </select>
         </div>
 
+        <!-- Reset all filters -->
         <button class="btn btn-primary" id="resetFiltersBtn">RESET FILTERS</button>
     </div>
 
 
-    <!-- ГЛАВНА СТРАНИЦА -->
+    <!-- Main page content -->
     <div class="form_container">
         <header>
 
             <div class="navbar">
                 <div class="nav-left-wrapper">
+
+                    <!-- Open the categories sidebar -->
                     <button class="hamburger-btn" id="hamburgerBtn" title="Open Categories">
                         <span class="hamburger-line"></span>
                         <span class="hamburger-line"></span>
                         <span class="hamburger-line"></span>
                     </button>
+
+                    <!-- TradeVibe logo and home link -->
                     <div class="brand-logo-zone" onclick="window.location.href='index.php';">
-                        <!-- СВГ Икона која визуелно претставува брза трговија, пазар и размена на стока -->
+                        <!-- SVG icon used for the TradeVibe logo -->
                         <svg class="brand-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="16 3 21 3 21 8"></polyline>
                             <line x1="4" y1="20" x2="21" y2="4"></line>
@@ -207,7 +218,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                         <span class="brand-name-text">Trade<span class="brand-accent-text">Vibe</span></span>
                     </div>
 
-
+                    <!-- Currency selector -->
                     <div class="currency-switcher">
                         <label for="currencySelect">Currency: </label>
                         <select id="currencySelect" onchange="location = this.value;">
@@ -217,7 +228,9 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                         </select>
                     </div>
 
+                    <!-- Navigation buttons -->
                     <ul class="btn-list">
+                        <!-- Show the cart only for customers -->
                         <?php if ($_SESSION['user_role'] === 'user'): ?>
                             <li>
                                 <a href="view_cart.php" class="nav-cart-link">
@@ -229,24 +242,29 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                             </li>
                         <?php endif; ?>
 
+                        <!-- Show admin actions for admin and root users -->
                         <?php if ($role === 'admin' || $role === 'root'): ?>
+
+                            <!-- Only admins can add products -->
                             <?php if ($role === 'admin'): ?>
                                 <li><a href="add.php" class="btn btn-primary">ADD</a></li>
                             <?php endif; ?>
                             <li><button class="btn btn-danger mass_delete">MASS DELETE</button></li>
                         <?php endif; ?>
 
+                        <!-- User profile menu -->
                         <li class="profile-container">
                             <button class="profile-icon-btn" id="profileBtn">👤</button>
 
                             <div class="profile-dropdown" id="profileMenu">
+                                <!-- Display basic account information -->
                                 <p><strong>Account Type:</strong> <?php echo ($_SESSION['user_role'] === 'admin') ? 'Seller' : ($_SESSION['user_role'] === 'root' ? 'Root System Admin' : 'Customer'); ?></p>
                                 <p><strong>Full Name:</strong> <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></p>
                                 <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email']); ?></p>
                                 <p><strong>Address:</strong> <?php echo htmlspecialchars($_SESSION['address']); ?></p>
                                 <hr>
 
-                                <!-- УСЛОВНА НАВИГАЦИЈА: СЕО И ООР ОПТИМИЗИРАНА БЕЗ INLINE СТИЛОВИ -->
+                                <!-- Show different links based on the user's role -->
                                 <?php if ($_SESSION['user_role'] === 'root'): ?>
                                     <a href="manage_sellers.php" class="root-matrix-link">⚙ Manage Sellers Matrix</a>
                                 <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
@@ -258,6 +276,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                                 <?php endif; ?>
 
 
+                                <!-- Profile and logout links -->
                                 <a href="edit_profile.php" class="profile-edit-link" style="margin-top: 5px; display: block;">Edit Profile Info</a>
                                 <a href="logout.php" class="logout-link">Log Out</a>
                             </div>
@@ -268,16 +287,18 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             </div>
         </header>
 
+        <!-- Products are loaded here by appIndex.js -->
         <div class="productList">
-            <!-- Овде преку AJAX се вчитаат продуктите од appIndex.js -->
+
         </div>
     </div>
 
-    <!-- БРЗ ЕДИТ ПАНЕЛ (QUICK EDIT MODAL) -->
+    <!-- Quick edit modal for product price and discount -->
     <div id="editPriceModal" class="quick-edit-modal-overlay">
         <div class="quick-edit-content-box">
             <h3>Quick Edit Product</h3>
 
+            <!-- Store the product ID while editing -->
             <input type="hidden" id="edit_modal_product_id">
 
             <div class="quick-edit-field-group">
@@ -290,6 +311,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                 <input type="number" id="edit_modal_discount" min="0" max="99">
             </div>
 
+            <!-- Modal action buttons -->
             <div class="quick-edit-action-zone">
                 <button class="btn btn-secondary quick-edit-modal-btn" id="closeEditModalBtn">Cancel</button>
                 <button class="btn btn-success quick-edit-modal-btn" id="savePriceBtn">Save Changes</button>
@@ -298,21 +320,21 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
     </div>
 
 
-    <!-- МОДЕРЕН MODAL ПРОЗОРИЦ ЗА ПРЕГЛЕД НА ПРОДУКТ (PRODUCT QUICK VIEW) -->
+    <!-- Product quick-view modal -->
 
     <div id="productViewModal" class="modal-overlay">
         <div class="modal-content-box">
 
             <button id="closeViewModalBtn" class="modal-close-btn">✕</button>
 
-            <!-- ЛЕВА СТРАНА: ГАЛЕРИЈА -->
+            <!-- Product image gallery -->
             <div class="modal-left-gallery">
                 <button id="prevImgBtn" class="modal-nav-btn">‹</button>
                 <div id="modalImageFrame" class="modal-image-frame"></div>
                 <button id="nextImgBtn" class="modal-nav-btn">›</button>
             </div>
 
-            <!-- ДЕСНА СТРАНА: ИНФОРМАЦИИ -->
+            <!-- Product information -->
             <div class="modal-right-info">
                 <div>
                     <span id="modalSku" class="modal-sku"></span>
@@ -320,7 +342,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 
                     <div id="modalSpecs" class="modal-specs-container"></div>
 
-                    <!-- Опис Dropdown -->
+                    <!-- Collapsible product description -->
                     <div id="modalDescWrapper" class="modal-desc-wrapper">
                         <button id="toggleDescBtn" class="modal-desc-toggle">
                             <span>Product Description</span>
@@ -328,21 +350,22 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                         </button>
                         <div id="modalDescription" class="modal-desc-content"></div>
                     </div>
-                    <!-- СЕКТОР ЗА УПРАВУВАЊЕ СО ЗАЛИХИ (САМО ЗА ПРОДАВАЧИ) -->
+                    <!-- Stock management for sellers -->
                     <div id="modalSellerStockSection" class="quick-edit-field-group" style="display: none; margin-top: 20px;">
                         <h4 style="font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e0; padding-bottom: 5px;">📦 Stock Management System</h4>
                         <div id="modalStockMatrixTableContainer"></div>
                     </div>
 
-                    <!-- Големини -->
+                    <!-- Product size or configuration options -->
                     <div id="modalSizeWrapper" class="modal-size-wrapper">
                         <label class="modal-size-label">Select Size / Configuration:</label>
                         <div id="modalSizesContainer" class="modal-sizes-flex"></div>
+                        <!-- Stores the selected size -->
                         <input type="hidden" id="modalSelectedSizeTracker" value="">
                     </div>
                 </div>
 
-                <!-- Цена и Акција -->
+                <!-- Product price and action buttons -->
                 <div class="modal-footer-action">
                     <div>
                         <span class="modal-price-label">Price Amount:</span>
@@ -362,19 +385,17 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
         </div>
     </footer>
 
-    <!-- Глобални променливи за JavaScript -->
+    <!-- Pass PHP session data to JavaScript -->
     <script>
         const currentUserRole = "<?php echo $_SESSION['user_role']; ?>";
         const currentUserId = parseInt("<?php echo $_SESSION['user_id']; ?>");
         console.log("Logged User Role:", currentUserRole, "ID:", currentUserId);
     </script>
 
-    <!-- Главната скрипта за продуктите -->
+    <!-- Main product JavaScript file -->
     <script src="scripts/appIndex.js"></script>
 
-    <!-- Безбеден код за отворање и затворање на профилното мени -->
-
-    <!-- Паметен код за отворање, затворање и под-подкатегории на мебел -->
+    <!-- Handle sidebar, category, furniture, and profile menu actions -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -385,7 +406,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
             const profileBtn = document.getElementById('profileBtn');
             const profileMenu = document.getElementById('profileMenu');
 
-            // 1. КОНТРОЛА ЗА ОТВОРАЊЕ И ЗАТВОРАЊЕ НА HAMBURGER МЕНИТО
+            // Open and close the hamburger sidebar
             if (hamburgerBtn && sidebarMenu && menuOverlay) {
                 hamburgerBtn.addEventListener('click', () => {
                     sidebarMenu.classList.add('active');
@@ -401,24 +422,29 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                 menuOverlay.addEventListener('click', closeSidebar);
             }
 
-            // 2. АКТИВИРАЊЕ НА КЛИКОТ НА СТАНДАРДНИТЕ ПОДКАТЕГОРИИ (Books, Clothing итн.)
+            // Handle clicks on regular product categories
             document.querySelectorAll(".subcat-list > li").forEach(li => {
                 li.addEventListener("click", function(e) {
+                    // Ignore clicks inside the furniture room menu
                     if (e.target.closest('.room-dropdown-menu') || this.id === "furnitureParentLi") return;
 
+                    // Remove active states from other categories
                     document.querySelectorAll(".subcat-list li").forEach(el => el.classList.remove("active"));
                     document.querySelectorAll(".room-dropdown-menu li").forEach(el => el.classList.remove("active-room"));
 
+                    // Store the selected category and subcategory
                     window.selectedFurnitureRoom = "all";
                     window.activeSelectedSubcategoryTracker = this.getAttribute("data-sub");
                     window.activeSelectedCategoryTracker = this.parentElement.getAttribute("data-category");
 
                     this.classList.add("active");
 
+                    // Update the product list
                     if (typeof filterAndRenderProducts === "function") {
                         filterAndRenderProducts();
                     }
 
+                    // Close the sidebar after selecting a category
                     if (sidebarMenu && menuOverlay) {
                         sidebarMenu.classList.remove('active');
                         menuOverlay.classList.remove('active');
@@ -426,26 +452,31 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                 });
             });
 
-            // 3. СЛУШАТЕЛ ЗА КЛИК НА ОДРЕДЕНА СОБА (Под-подкатегорија за мебел)
+            // Handle furniture room selection
             document.querySelectorAll(".room-dropdown-menu li").forEach(roomLi => {
                 roomLi.addEventListener("click", function(e) {
-                    e.stopPropagation(); // Стопирај го активирањето на Furniture кликот на родителот
+                    // Prevent the parent Furniture item from being triggered   
+                    e.stopPropagation();
 
+                    // Update the selected room
                     document.querySelectorAll(".room-dropdown-menu li").forEach(el => el.classList.remove("active-room"));
                     this.classList.add("active-room");
 
-                    // КРИТИЧЕН ФИКС: Ги поставуваме трите паметни глобални вредности
+                    // Store the selected furniture filters
                     window.selectedFurnitureRoom = this.getAttribute("data-room");
-                    window.activeSelectedSubcategoryTracker = "Furniture"; // Присилно ја поставуваме подкатегоријата на Мебел!
+                    window.activeSelectedSubcategoryTracker = "Furniture";
                     window.activeSelectedCategoryTracker = "Home & Garden";
 
+                    // Set Furniture as the active category
                     document.querySelectorAll(".subcat-list li").forEach(el => el.classList.remove("active"));
                     document.getElementById("furnitureParentLi").classList.add("active");
 
+                    // Update the product list
                     if (typeof filterAndRenderProducts === "function") {
-                        filterAndRenderProducts(); // Ре-рендерирање во реално време!
+                        filterAndRenderProducts();
                     }
 
+                    // Close the sidebar after selecting a room
                     if (sidebarMenu && menuOverlay) {
                         sidebarMenu.classList.remove('active');
                         menuOverlay.classList.remove('active');
@@ -455,13 +486,14 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 
 
 
-            // 4. КОНТРОЛА ЗА ПРОФИЛОТ (ЧОВЕЧЕТО 👤)
+            // Open and close the profile menu
             if (profileBtn && profileMenu) {
                 profileBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     profileMenu.style.display = (profileMenu.style.display === 'block') ? 'none' : 'block';
                 });
+                // Close the profile menu when clicking outside it
                 document.addEventListener('click', (e) => {
                     if (!profileMenu.contains(e.target) && e.target !== profileBtn) {
                         profileMenu.style.display = 'none';

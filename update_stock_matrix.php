@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 require_once "includes/autoloader.php";
 
-// Безбедност: Опцијата е дозволена строго за Продавачи (admin)
+// Security: Check if the logged-in user is an admin (seller)
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     echo json_encode(['success' => false, 'message' => 'Unauthorized entry protocol restriction.']);
     exit();
@@ -21,19 +21,19 @@ if ($data && isset($data['product_id']) && isset($data['size']) && isset($data['
     $qtyToAdd = intval($data['quantity_to_add']);
     $adminId = intval($_SESSION['user_id']);
 
-    // СИГУРНОСЕН ГАРД: Обезбедуваме продавачот да може да менува залиха САМО НА СВОЈ производ
+     // Check ownership: Ensure the seller owns this specific product
     $check = mysqli_query($conn, "SELECT `id` FROM `producttable` WHERE `id` = $pId AND `admin_id` = $adminId");
     
     if (mysqli_num_rows($check) > 0) {
         
-        // Паметна SQL проверка: дали за овој специфичен број веќе има запис во табелата `product_stock`
+       // Database check: See if this product size is already in the stock table
         $stockCheck = mysqli_query($conn, "SELECT `id` FROM `product_stock` WHERE `product_id` = $pId AND `size_name` = '$sizeName'");
         
         if (mysqli_num_rows($stockCheck) > 0) {
-            // А) АКО ПОСТОИ: Го зголемуваме моменталниот број на парчиња во магацинот
+            // If the size exists, increase the stock quantity
             $sql = "UPDATE `product_stock` SET `quantity` = `quantity` + $qtyToAdd WHERE `product_id` = $pId AND `size_name` = '$sizeName'";
         } else {
-            // Б) АКО НЕ ПОСТОИ: Креираме нов ред за залиха
+            // If the size does not exist, add a new row for it
             $sql = "INSERT INTO `product_stock` (`product_id`, `size_name`, `quantity`) VALUES ($pId, '$sizeName', $qtyToAdd)";
         }
 

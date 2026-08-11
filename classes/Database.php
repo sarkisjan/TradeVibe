@@ -8,15 +8,16 @@ class Database
     private $password;
     private $dbname;
 
-    // Дефинирање на имињата на сите табели како својства
-    protected $tbname;          // Табела за производи
-    protected $usersTable;      // Табела за корисници
-    protected $cartTable;       // Табела за привремена кошничка
-    protected $ordersTable;     // Табела за главни нарачки
-    protected $orderItemsTable; // Табела за артикли во нарачките
+    // Database table names
+    protected $tbname;          // Products table
+    protected $usersTable;      // Users table
+    protected $cartTable;       // Shopping cart table
+    protected $ordersTable;     // Orders table
+    protected $orderItemsTable; // Order items table
 
     public $errors = [];
 
+    // Initialize the database connection
     public function initDatabase()
     {
         $this->connect();
@@ -24,19 +25,20 @@ class Database
 
     public function connect()
     {
+        // Database connection settings
         $this->servername = "localhost";
         $this->username = "root";
         $this->password = "";
         $this->dbname = "products";
 
-        // Имиња на табелите во базата
+        // Set the names of all database tables
         $this->tbname          = "producttable";
         $this->usersTable      = "users";
         $this->cartTable       = "cart";
         $this->ordersTable     = "orders";
         $this->orderItemsTable = "order_items";
 
-        // Поврзување со серверот
+        // Connect to the MySQL server
         $conn = mysqli_connect($this->servername, $this->username, $this->password);
 
         if (!$conn) {
@@ -44,17 +46,17 @@ class Database
             return null;
         }
 
-        // Креирање на базата ако не постои
+        // Create the database if it does not already exist
         $sql_db = "CREATE DATABASE IF NOT EXISTS `$this->dbname` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
         if (!mysqli_query($conn, $sql_db)) {
             $this->errors[] = "Error creating database: " . mysqli_error($conn);
             return null;
         }
 
-        // Селектирање на базата
+        // Select the database
         mysqli_select_db($conn, $this->dbname);
 
-        // ТАБЕЛА ЗА КОРИСНИЦИ (АЖУРИРАНА СО СИТЕ НОВИ ПОЛИЊА И УЛОГАТА ROOT)
+        // Create the users table
 
         $sql_users = "CREATE TABLE IF NOT EXISTS `$this->usersTable` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -77,7 +79,7 @@ class Database
             $this->errors[] = "Error creating users table: " . mysqli_error($conn);
         }
 
-        // ТАБЕЛА ЗА ПРОИЗВОДИ
+        // Create the products table
         $sql_products = "CREATE TABLE IF NOT EXISTS `$this->tbname` (
                 `id` INT(10) NOT NULL AUTO_INCREMENT,
                 `admin_id` INT(11) NOT NULL DEFAULT 1,
@@ -109,7 +111,7 @@ class Database
             $this->errors[] = "Error creating products table: " . mysqli_error($conn);
         }
 
-        // ТАБЕЛА ЗА ПРИВРЕМЕНА КОШНИЧКА
+        // Create the shopping cart table
         $sql_cart = "CREATE TABLE IF NOT EXISTS `$this->cartTable` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `user_id` INT(11) NOT NULL,
@@ -124,7 +126,8 @@ class Database
             $this->errors[] = "Error creating cart table: " . mysqli_error($conn);
         }
 
-        // ГЛАВНИ НАРАЧКИ (ORDERS за зачувување при Checkout)
+        // Create the orders table
+        // This table stores the main order information after checkout
         $sql_orders = "CREATE TABLE IF NOT EXISTS `$this->ordersTable` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `user_id` INT(11) NOT NULL,
@@ -144,8 +147,8 @@ class Database
             $this->errors[] = "Error creating orders table: " . mysqli_error($conn);
         }
 
-        // СТАВКИ ОД НАРАЧКАТА (ORDER_ITEMS - кои точни производи се купени)
-
+        // Create the order items table 
+        // Stores the individual products included in each order
         $sql_order_items = "CREATE TABLE IF NOT EXISTS `$this->orderItemsTable` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `order_id` INT(11) NOT NULL,
@@ -162,7 +165,8 @@ class Database
         if (!mysqli_query($conn, $sql_order_items)) {
             $this->errors[] = "Error creating order_items table: " . mysqli_error($conn);
         }
-        // Следење на количини по поединечни големини (Stock Inventory)
+        // Create the stock table
+        // Stores the available quantity for each product size
         $sql_stock = "CREATE TABLE IF NOT EXISTS `product_stock` (
                 `id` INT(11) NOT NULL AUTO_INCREMENT,
                 `product_id` INT(10) NOT NULL,

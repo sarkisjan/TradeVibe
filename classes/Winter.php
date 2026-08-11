@@ -1,10 +1,12 @@
 <?php
-class Winter extends Validation implements Product {
-    public function validateForm($post) {
-        
-        
+class Winter extends Validation implements Product
+{
+    public function validateForm($post)
+    {
+
+
         $hasStockData = false;
-        
+
         if (isset($post->stockData)) {
             $stockDataRaw = $post->stockData;
             if (!empty($stockDataRaw)) {
@@ -18,11 +20,11 @@ class Winter extends Validation implements Product {
         if (!$hasStockData) {
             $this->addError('subcategory', "Please select at least one apparel size configuration check-box layout with available inventory stock.");
         }
-        
+
         // Base parameter mapping validation loop
         $fields = ['sku', 'name', 'price'];
-        
-        foreach($fields as $field) {
+
+        foreach ($fields as $field) {
             if (isset($post->$field)) {
                 if (trim($post->$field) === '') {
                     $this->addError($field, "Please provide the product " . $field);
@@ -31,8 +33,7 @@ class Winter extends Validation implements Product {
                 $this->addError($field, "Please provide the product " . $field);
             }
         }
-        
+
         return $this->errors;
     }
 }
-?>

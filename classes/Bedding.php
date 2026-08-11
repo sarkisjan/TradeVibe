@@ -1,11 +1,13 @@
 <?php
-class Bedding extends Validation implements Product {
-    public function validateForm($post) {
-        
-        // Специфични задолжителни полиња за постелнини (Основни податоци + 3 Димензии)
+class Bedding extends Validation implements Product
+{
+    public function validateForm($post)
+    {
+
+
         $fields = ['sku', 'name', 'price', 'height', 'width', 'length'];
-        
-        foreach($fields as $field) {
+
+        foreach ($fields as $field) {
             if (isset($post->$field)) {
                 if (trim($post->$field) === '') {
                     $this->addError($field, "Please provide the product " . $field);
@@ -14,8 +16,7 @@ class Bedding extends Validation implements Product {
                 $this->addError($field, "Please provide the product " . $field);
             }
         }
-        
+
         return $this->errors;
     }
 }
-?>

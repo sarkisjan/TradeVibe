@@ -1,6 +1,6 @@
 <?php
 session_start();
-// Безбедносна кочница: Само најавени продавачи (admin) имаат пристап
+// Only logged-in sellers (admin users) can access this page.
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     header("Location: login.php");
     exit();
@@ -21,8 +21,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     <div class="form_container">
         <header>
             <div class="navbar">
-                <div class="brand-logo-zone" onclick="window.location.href='index.php';">
-                    <!-- СВГ Икона која визуелно претставува брза трговија, пазар и размена на стока -->
+                <!-- TradeVibe logo and link back to the home page. -->
+                <div class="brand-logo-zone" onclick="window.location.href='index.php';">                   
                     <svg class="brand-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="16 3 21 3 21 8"></polyline>
                         <line x1="4" y1="20" x2="21" y2="4"></line>
@@ -34,6 +34,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                 </div>
                 <span class="title">Add Product</span>
                 <ul class="btn-list">
+                    <!-- Save the product or cancel and return to the store. -->
                     <li><button form="product_form" id="save" type="submit" class="btn btn-success" name="submit">SAVE</button></li>
                     <li><a href="index.php" class="btn btn-secondary">CANCEL</a></li>
                 </ul>
@@ -41,10 +42,11 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
         </header>
 
         <div class="add-product-container">
+            <!-- Product form. JavaScript collects and sends this data to the server. -->
             <form id="product_form" action="#" method="POST" enctype="multipart/form-data">
                 <div class="form-grid">
 
-                    <!-- 1. ОСНОВНИ ПОДАТОЦИ -->
+                    <!-- Basic product information. -->
                     <div class="form-item">
                         <label for="sku">SKU Code</label>
                         <input id="sku" type="text" placeholder="Enter unique SKU" name="sku">
@@ -75,14 +77,14 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                         <span class="error-msg" id="discountError"></span>
                     </div>
 
-                    <!-- 2. СЛИКА НА ПРОДУКТОТ -->
+                    <!-- Product images. Multiple images can be uploaded at once. -->
                     <div class="form-item full-width-field">
                         <label for="product_image">Product Image Gallery (Select one or multiple images)</label>
                         <input id="product_image" type="file" name="product_image[]" accept="image/*" class="file-upload-input-matrix" multiple>
                         <span class="error-msg" id="imageError"></span>
                     </div>
 
-                    <!-- 3. КАТЕГОРИЗАЦИЈА -->
+                    <!-- Product category and subcategory selection. -->
                     <div class="form-item">
                         <label for="category">Main Category</label>
                         <select name="category" id="category" required>
@@ -101,7 +103,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                         <span class="error-msg" id="subcategoryError"></span>
                     </div>
 
-                    <!-- ДИНАМИЧНО ПОЛЕ ЗА ТИП НА ПРОСТОРИЈА ЗА МЕБЕЛ -->
+                    <!-- This field is shown only when the Furniture subcategory is selected. -->
                     <div class="form-item" id="furniture_type_section" style="display: none;">
                         <label for="furniture_room">Furniture Room Type</label>
                         <select name="furniture_room" id="furniture_room">
@@ -118,7 +120,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                         <span class="error-msg" id="furnitureRoomError"></span>
                     </div>
 
-                    <!-- 4. Е-КОМЕРЦ СПЕЦИФИКАЦИИ -->
+                    <!-- Additional product information. -->
                     <div class="form-item">
                         <label for="brand">Brand / Manufacturer</label>
                         <select name="brand" id="brand" disabled>
@@ -127,7 +129,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                         <span class="error-msg" id="brandError"></span>
                     </div>
 
-                    <!-- ДИНАМИЧНО ПОЛЕ ЗА РАЧНО ВНЕСУВАЊЕ НА БРЕНД -->
+                    <!-- This field is shown when the user chooses to enter a custom brand. -->
                     <div class="form-item" id="other_brand_section" style="display: none;">
                         <label for="other_brand">Enter Brand Name</label>
                         <input type="text" id="other_brand" name="other_brand" placeholder="Type manufacturer name">
@@ -160,7 +162,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                             <option value="XL">Extra Large (XL)</option>
                             <option value="Standard">Standard Size</option>
                         </select>
-                        <!-- СИНТАКСИЧКИ ФИКС: Овој таг сега е сигурно затворен! -->
+                       
                         <span class="error-msg" id="size_attrError"></span>
                     </div>
 
@@ -177,7 +179,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
 
                 </div>
 
-                <!-- Контејнерот каде JS динамички ги црта димензиите/тежините/големините со чист CSS -->
+                <!-- JavaScript adds category-specific fields here. -->
                 <div class="shown_form_inputs"></div>
 
             </form>
@@ -189,7 +191,6 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             <p class="footer-author">by Blagoja Sarkisjan</p>
         </div>
     </footer>
-    <!-- Најважниот линк до твојот прочистен JS фајл -->
     <script src="scripts/app.js"></script>
 </body>
 

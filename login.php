@@ -2,39 +2,48 @@
 session_start();
 require_once "includes/autoloader.php";
 
+// Hide PHP errors from users while still reporting them internally
 ini_set('display_errors', 0); 
 error_reporting(E_ALL);
 
+// Connect to the database
 $dbClass = new Database();
 $conn = $dbClass->connect();
 
+// Store any login error message
 $error = "";
 
+// Stop the script if the database connection fails
 if (!$conn) {
     die("Database setup link breakdown: Connection error.");
 }
 
+// Handle the login form when it is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
+// Get the email and password entered by the user
     $raw_email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $raw_password = isset($_POST['password']) ? $_POST['password'] : '';
 
+    // Make sure both fields have been filled in
     if (empty($raw_email) || empty($raw_password)) {
         $error = "Please fill out all the fields!";
     } else {
+        // Escape the email before using it in the SQL query
         $email = mysqli_real_escape_string($conn, $raw_email);
         
-        // КРИТИЧЕН ФИКС: Го тргаме филтерот за да може базата да го најде профилот дури и ако е неверификуван
+        // Find the user by email, even if the account is not verified yet
         $query = "SELECT * FROM `users` WHERE `email` = '$email' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
+        // Check if an account was found
         if ($result && mysqli_num_rows($result) > 0) {
             $user = mysqli_fetch_assoc($result);
 
-            // Прво проверуваме дали внесената лозинка е точна за тој е-мејл
+            // Check if the entered password matches the stored password
             if (password_verify($raw_password, $user['password'])) {
                 
-                // ПОПРАВЕНО: Штом лозинката е точна, тука паметно пресретнуваме дали профилот е верификуван
+                // Check if the account has been verified
                 if (intval($user['is_verified']) !== 1) {
                     $error = "Your account has been registered successfully, but it is currently unverified! 
                               <br><br>
@@ -48,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               <br>
                               2. If you strictly wish to test with your newly created personal profile, please contact the administrator (Blagoja Sarkisjan) to manually approve and verify your account status within the database control layers.";
                 } else {
-                    // АКО Е СЀ ВО РЕД: Ги зачувуваме сесиите и го најавуваме корисникот
+                    // Save the user's information in the session after successful login
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_role'] = $user['role']; 
                     $_SESSION['first_name'] = $user['first_name'];
@@ -57,13 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['phone'] = $user['phone'];
                     $_SESSION['address'] = $user['address'];
 
+                    // Redirect the user to the main page
                     header("Location: index.php");
                     exit();
                 }
             } else {
+                // Show an error when the password is incorrect
                 $error = "Invalid password entered! Please try again.";
             }
         } else {
+            // Show an error when no account exists with the entered email
             $error = "No registered account found with this email address!";
         }
     }
@@ -82,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="login-box">
         <h2>Sign In</h2>
-        
+        <!-- Show demo accounts that can be used for testing -->
         <div class="test-credentials-panel">
             <h4>🔐 Demo Environment Test Accounts</h4>
             <div class="user-type-group"><span class="badge-role role-root">Root Admin</span><strong>Email:</strong> root@eshop.com | <strong>Pass:</strong> root123</div>
@@ -93,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         
         <?php if(!empty($error)): ?>
+            <!-- Display the login error if one exists -->
             <div class="error-banner">⚠️ <?php echo $error; ?></div>
         <?php endif; ?>
 
