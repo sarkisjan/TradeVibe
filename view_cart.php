@@ -103,7 +103,7 @@ $missing_size_detected = false;
                             $size_display_html = "<span class='size-badge'>" . htmlspecialchars($size) . "</span>";
                         }
 
-                         // Clean price strings and calculate discount math variations
+                        // Clean price strings and calculate discount math variations
                         $clean_price = str_replace(['$', ' ', 'den', 'EUR', '€'], '', $product['price']);
                         $item_base_price = floatval($clean_price);
                         $discount = intval($product['discount']);
@@ -157,15 +157,51 @@ $missing_size_detected = false;
             </table>
 
             <div class="cart-summary">
-                <p style="font-size: 20px; color:#1a202c;"><strong>Total Amount: <span id="total-amount-display" style="color: #2cbd6c; font-weight:800;"><?php echo number_format($total_price, 2) . $currency_symbol; ?></span></strong></p>
+                <?php
+                // Shipping calculation constants based on marketplace standards
+                $shipping_threshold = 30.00; // Free shipping limit for USD
+                $standard_shipping_rate = 3.00; // Standard shipping rate for USD
 
-                 <!-- SIZE PROTECTIVE GATEWAY SYSTEM BLOCK -->
+                // Adjust thresholds dynamically if the currency is set to Macedonian Denars (MKD)
+                if ($currency === 'MKD' || $currency === 'ден') {
+                    $shipping_threshold = 1500.00;
+                    $standard_shipping_rate = 150.00;
+                } elseif ($currency === 'EUR' || $currency === '€') {
+                    $shipping_threshold = 25.00;
+                    $standard_shipping_rate = 2.50;
+                }
+
+                // If total price is above the threshold, shipping becomes completely free
+                $shipping_cost = ($total_price >= $shipping_threshold) ? 0.00 : $standard_shipping_rate;
+                $final_grand_total = $total_price + $shipping_cost;
+                ?>
+
+                <!-- Structured calculation lines without inline styling -->
+                <div class="summary-line-item">
+                    <span>Items Subtotal:</span>
+                    <strong><?php echo number_format($total_price, 2) . ' ' . $currency_symbol; ?></strong>
+                </div>
+
+                <div class="summary-line-item">
+                    <span>Shipping Delivery:</span>
+                    <strong style="color: <?php echo ($shipping_cost == 0) ? '#2cbd6c' : '#e67e22'; ?>;">
+                        <?php echo ($shipping_cost == 0) ? 'FREE' : number_format($shipping_cost, 2) . ' ' . $currency_symbol; ?>
+                    </strong>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 10px 0;">
+
+                <p class="cart-total-amount-wrapper">
+                    <strong>Total Amount: <span id="total-amount-display"><?php echo number_format($final_grand_total, 2) . ' ' . $currency_symbol; ?></span></strong>
+                </p>
+
                 <?php if ($missing_size_detected): ?>
-                    <button class="checkout-btn disabled-btn" onclick="alert('Cannot proceed to checkout! One or more items in your cart require a specific size configuration. Please remove the invalid items and re-add them with a selected size from the shop layout.')">CHECKOUT LOCKED</button>
+                    <button class="checkout-btn disabled-btn" onclick="alert('Cannot proceed to checkout! One or more items require a size configuration.');">CHECKOUT LOCKED</button>
                 <?php else: ?>
-                    <a href="checkout.php"><button class="checkout-btn">PROCEED TO CHECKOUT</button></a>
+                    <button type="button" class="checkout-btn" id="openCheckoutModalBtn">PROCEED TO CHECKOUT</button>
                 <?php endif; ?>
             </div>
+
         <?php endif; ?>
     </div>
 

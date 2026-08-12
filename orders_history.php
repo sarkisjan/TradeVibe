@@ -16,27 +16,33 @@ $conn = $dbClass->connect();
 $userId = $_SESSION['user_id'];
 $role = $_SESSION['user_role'];
 
-// Variables used for SKU filtering
-$full_sku = "";
+// Variables used for SQL search filtering queries
 $sku_search_query = "";
+$order_id_search_query = "";
 
-// Allow administrators to update the order status
+// Allow administrators to update the order delivery status
 if ($role === 'admin' && isset($_POST['update_status'])) {
     $oId = intval($_POST['order_id']);
     $newStatus = mysqli_real_escape_string($conn, $_POST['order_status']);
     mysqli_query($conn, "UPDATE `orders` SET `status` = '$newStatus' WHERE `id` = $oId");
-    // Reload the page after updating the order
+
+    // Reload the log matrix page layout after a successful update
     header("Location: orders_history.php");
     exit();
 }
 
-// Allow administrators to search for orders by product SKU
+// FILTER BY CLEAN SKU: Flexible search using standard wildcard matching
 if ($role === 'admin' && isset($_GET['search_sku']) && !empty($_GET['search_sku'])) {
-    $search = mysqli_real_escape_string($conn, trim($_GET['search_sku']));
-    // Add the user's ID to the SKU to create the full product SKU
-    $full_sku = $userId . "/" . $search;
-    $sku_search_query = " AND p.sku = '$full_sku' ";
+    $search_sku = mysqli_real_escape_string($conn, trim($_GET['search_sku']));
+    $sku_search_query = " AND p.sku LIKE '%$search_sku%' ";
 }
+
+// FILTER BY ORDER ID: Strict tracking using unique numbers
+if ($role === 'admin' && isset($_GET['search_order_id']) && !empty($_GET['search_order_id'])) {
+    $search_order_id = intval($_GET['search_order_id']);
+    $order_id_search_query = " AND o.id = $search_order_id ";
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,16 +80,32 @@ if ($role === 'admin' && isset($_GET['search_sku']) && !empty($_GET['search_sku'
 
         <?php if ($role === 'admin'): ?>
             <!-- Product search panel for administrators -->
-            <div class="monitoring-panel">
-                <h3>🔍 Product Inventory Monitoring Panel</h3>
-                <form method="GET" action="orders_history.php" class="monitoring-form">
-                    <input type="text" name="search_sku" placeholder="Enter Product Short SKU (e.g., adidas123)" value="<?php echo isset($_GET['search_sku']) ? htmlspecialchars($_GET['search_sku']) : ''; ?>" class="monitoring-input" required>
-                    <button type="submit" class="btn btn-primary" style="height: 38px; margin: 0 !important;">Monitor Product</button>
-                    <?php if (isset($_GET['search_sku'])): ?>
-                        <!-- Show this link only when a filter is active -->
-                        <a href="orders_history.php" class="clear-filter-btn">✕ Clear Filter</a>
-                    <?php endif; ?>
-                </form>
+            <div class="monitoring-panels-wrapper">
+
+                <!-- FILTER BY EXACT SKU FORMAT -->
+                <div class="monitoring-panel">
+                    <h3>🔍 Filter Orders by Product SKU</h3>
+                    <form method="GET" action="orders_history.php" class="monitoring-form">
+                        <input type="text" name="search_sku" placeholder="Enter SKU (e.g., 2004)" value="<?php echo isset($_GET['search_sku']) ? htmlspecialchars($_GET['search_sku']) : ''; ?>" class="monitoring-input" required>
+                        <button type="submit" class="btn btn-primary" style="height: 38px; margin: 0 !important; white-space: nowrap;">Search SKU</button>
+                        <?php if (isset($_GET['search_sku'])): ?>
+                            <a href="orders_history.php" class="clear-filter-btn">✕ Clear</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+
+                <!-- FILTER BY ID: Search for a single unique order using its sequential number -->
+                <div class="monitoring-panel">
+                    <h3>📦 Search by Unique Order ID</h3>
+                    <form method="GET" action="orders_history.php" class="monitoring-form">
+                        <input type="number" name="search_order_id" placeholder="Enter Order ID (e.g., 7)" value="<?php echo isset($_GET['search_order_id']) ? htmlspecialchars($_GET['search_order_id']) : ''; ?>" class="monitoring-input" required>
+                        <button type="submit" class="btn btn-primary" style="height: 38px; margin: 0 !important; white-space: nowrap;">Find Order</button>
+                        <?php if (isset($_GET['search_order_id'])): ?>
+                            <a href="orders_history.php" class="clear-filter-btn">✕ Clear</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+
             </div>
         <?php endif; ?>
 
@@ -106,7 +128,7 @@ if ($role === 'admin' && isset($_GET['search_sku']) && !empty($_GET['search_sku'
                       JOIN `order_items` oi ON o.id = oi.order_id
                       JOIN `producttable` p ON oi.product_id = p.id
                       JOIN `users` u ON o.user_id = u.id
-                      WHERE p.admin_id = $userId {$sku_search_query} ORDER BY o.id DESC";
+                      WHERE p.admin_id = $userId {$sku_search_query} {$order_id_search_query}  ORDER BY o.id DESC";
         }
 
         // Run the order query
@@ -124,15 +146,58 @@ if ($role === 'admin' && isset($_GET['search_sku']) && !empty($_GET['search_sku'
         ?>
                 <!-- Display information for one order -->
                 <div class="order-card-box">
+                    <!-- CLEANED ARCHITECTURE: No inline styles inside the header layer -->
                     <div class="order-card-header">
                         <div>
                             <span class="order-id-label">ORDER ID: #<?php echo $oId; ?></span>
-                            <h4 class="order-receiver-name">Customer Profile: <span style="color:#2563eb;"><?php echo $realCustomerName; ?></span></h4>
+                            <h4 class="order-receiver-name">Customer Profile: <span class="customer-name-accent"><?php echo $realCustomerName; ?></span></h4>
                         </div>
                         <div>
-                            <span class="order-total-amount"><?php echo number_format($order['total_amount'], 2) . ' ' . $order['currency']; ?></span>
-                            <div style="margin-top: 5px; text-align: right;">
+                            <?php
+                            // REVERSE ENGINEER SHIPPING MATHEMATICS FOR THE LOG DISPLAY
+                            $total_val = floatval($order['total_amount']);
+                            $order_currency = $order['currency'];
 
+                            // Set up dynamic threshold limits inspired by Ananas.mk marketplace
+                            $threshold = 30.00;
+                            $rate = 3.00;
+
+                            if ($order_currency === 'MKD' || $order_currency === 'ден') {
+                                $threshold = 1500.00;
+                                $rate = 150.00;
+                            } elseif ($order_currency === 'EUR' || $order_currency === '€') {
+                                $threshold = 25.00;
+                                $rate = 2.50;
+                            }
+
+                            // If grand total passed the limit, the shipping was free (Items subtotal equals grand total)
+                            if ($total_val >= $threshold) {
+                                $history_shipping_cost = 0.00;
+                                $history_items_subtotal = $total_val;
+                            } else {
+                                // If grand total is lower, subtract shipping fee to get the raw items subtotal
+                                $history_shipping_cost = $rate;
+                                $history_items_subtotal = $total_val - $rate;
+                            }
+                            ?>
+
+                            <!-- NEW DETAILED ACCOUNTING GRID WITH NO INLINE PROPERTIES -->
+                            <div class="invoice-breakdown-panel">
+                                <div>Items Subtotal: <strong><?php echo number_format($history_items_subtotal, 2) . ' ' . $order_currency; ?></strong></div>
+
+                                <!-- NEW ROW: Shipping delivery fee rate display item -->
+                                <div>Shipping Fee:
+                                    <strong class="<?php echo ($history_shipping_cost == 0) ? 'shipping-free-green' : 'shipping-rate-orange'; ?>">
+                                        <?php echo ($history_shipping_cost == 0) ? 'FREE' : number_format($history_shipping_cost, 2) . ' ' . $order_currency; ?>
+                                    </strong>
+                                </div>
+
+                                <div class="order-total-amount">
+                                    Total: <?php echo number_format($total_val, 2) . ' ' . $order_currency; ?>
+                                </div>
+                            </div>
+
+                            <div class="status-action-wrapper">
                                 <?php if ($role === 'admin'): ?>
                                     <!-- Administrators can change the order status -->
                                     <form method="POST" action="orders_history.php" class="status-update-form">
@@ -149,104 +214,101 @@ if ($role === 'admin' && isset($_GET['search_sku']) && !empty($_GET['search_sku'
                                     <!-- Regular users can only view the current status -->
                                     <span class="size-badge-history">🚚 Status: <?php echo $order['status']; ?></span>
                                 <?php endif; ?>
-
                             </div>
                         </div>
                     </div>
 
-                    <!-- Display the main order information -->
+
+                    <!-- Display metadata info for the current order template loop -->
                     <div class="order-details-meta">
-                        📅 <strong>Order Placement Time:</strong> <span style="color:#4f46e5; font-weight:700;"><?php echo $orderTime; ?></span><br>
+                        📅 <strong>Order Placement Time:</strong> <span class="order-time-accent"><?php echo $orderTime; ?></span><br>
                         📍 <strong>Delivery Shipping Address:</strong> <?php echo htmlspecialchars($order['shipping_address']); ?><br>
-                        📞 <strong>Receiver Contact Phone:</strong> <?php echo htmlspecialchars($order['shipping_phone']); ?>
-                        <span style="color:#cbd5e0; margin:0 8px;">|</span>
-                        💳 <strong>Payment Protocol Method:</strong> <?php echo htmlspecialchars($order['payment_method']); ?>
+                        📞 <strong>Receiver Contact Phone:</strong> <?php echo htmlspecialchars($order['shipping_phone']); ?> <br>
+                        💳 <strong>Payment Method:</strong> <?php echo htmlspecialchars($order['payment_method']); ?>
+                        <span class="meta-divider-span">|</span>
+                        🚚 <strong>Delivery Rate:</strong>
+                        <span class="delivery-badge-status">
+                            <?php
+                            // Check if the total amount passed the free shipping threshold limits
+                            $total_val = floatval($order['total_amount']);
+                            echo ($total_val >= 30.00 && $order['currency'] === 'USD' || $total_val >= 1500.00) ? "FREE (Promo Approved)" : "Standard Rate Included";
+                            ?>
+                        </span>
 
                         <?php if (!empty($order['buyer_account_email'])): ?>
-                            <span style="color:#cbd5e0; margin:0 8px;">|</span> ✉ <strong>Registered Account Email:</strong> <span style="color:#2563eb; font-weight:600;"><?php echo htmlspecialchars($order['buyer_account_email']); ?></span>
+                            <span class="meta-divider-span">|</span> ✉ <strong>Account Email:</strong> <span class="buyer-email-link"><?php echo htmlspecialchars($order['buyer_account_email']); ?></span>
                         <?php endif; ?>
                     </div>
 
-                    <!-- Display the products included in the order -->
+                    <!-- Display the products included in the order table loop grid -->
                     <table class="order-items-table">
                         <thead>
                             <tr>
-                                <th>Product Name</th>
+                                <th class="text-left-th">Product Name</th>
                                 <?php if ($role === 'user'): ?>
                                     <th>Sold By (Vendor)</th>
                                 <?php endif; ?>
                                 <th>SKU Code</th>
                                 <th>Selected Size</th>
                                 <th>Purchased Qty</th>
-                                <th style="text-align: left;">Inventory Current Stock Summary Status</th>
+                                <th class="text-left-th">Inventory Current Stock Summary Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
-                            // Get the products, vendor names, and stock information for this order
-                            $items_query = "SELECT oi.*, p.name, p.sku, v.first_name as v_first, v.last_name as v_last,
-                                       (SELECT GROUP_CONCAT(CONCAT(size_name, ':', quantity)) FROM `product_stock` WHERE product_id = p.id) as stock_summary,
-                                       (SELECT SUM(quantity) FROM `product_stock` WHERE product_id = p.id) as total_qty
-                                       FROM `order_items` oi
-                                       JOIN `producttable` p ON oi.product_id = p.id
-                                       JOIN `users` v ON p.admin_id = v.id
-                                       WHERE oi.order_id = $oId";
+                            // Fetch all purchased items for this order without filter locks
+                            $items_query = "SELECT oi.*, p.name, p.sku, p.admin_id, v.first_name as v_first, v.last_name as v_last,
+                                           (SELECT GROUP_CONCAT(CONCAT(size_name, ':', quantity)) FROM `product_stock` WHERE product_id = p.id) as stock_summary,
+                                           (SELECT SUM(quantity) FROM `product_stock` WHERE product_id = p.id) as total_qty
+                                           FROM `order_items` oi
+                                           JOIN `producttable` p ON oi.product_id = p.id
+                                           JOIN `users` v ON p.admin_id = v.id
+                                           WHERE oi.order_id = $oId";
 
-                            // Apply the SKU filter when an administrator is searching for a product
-                            if ($role === 'admin' && isset($_GET['search_sku']) && !empty($_GET['search_sku'])) {
-                                $items_query .= " AND p.sku = '$full_sku'";
-                            }
-
-                            // Run the query and get the order items
                             $items_res = mysqli_query($conn, $items_query);
-                            // Process each product in the order
+
                             while ($item = mysqli_fetch_assoc($items_res)):
 
-                                // Build a readable stock status and remove sizes with zero stock
+                                // Build readable text log patterns for the warehouse inventory stock levels
                                 $stock_status_text = "";
                                 if (!empty($item['stock_summary'])) {
                                     $stock_items_raw = explode(',', $item['stock_summary']);
                                     $filtered_stock_array = [];
 
-                                    // Check the quantity available for each size
                                     foreach ($stock_items_raw as $raw_stock_element) {
                                         $parts = explode(':', $raw_stock_element);
                                         if (count($parts) === 2) {
                                             $sizeName = trim($parts[0]);
                                             $sizeQty  = intval($parts[1]);
 
-                                            // Only show sizes that still have stock
                                             if ($sizeQty > 0) {
                                                 $filtered_stock_array[] = "{$sizeName} (Qty:{$sizeQty})";
                                             }
                                         }
                                     }
 
-                                    // Create the final stock message
                                     if (!empty($filtered_stock_array)) {
                                         $stock_status_text = "Active sizes left in warehouse: " . implode(', ', $filtered_stock_array);
                                     } else {
                                         $stock_status_text = "0 / OUT OF STOCK";
                                     }
                                 } else {
-                                    // Use the total stock when size information is not available
                                     $total_pieces_left_check = intval($item['total_qty']);
                                     $stock_status_text = ($total_pieces_left_check > 0) ? "Total pieces left: " . $total_pieces_left_check . " items" : "0 / OUT OF STOCK";
                                 }
 
-                                // Prepare the vendor name for safe HTML output
                                 $vendorName = htmlspecialchars($item['v_first'] . ' ' . $item['v_last']);
                             ?>
                                 <tr>
-                                    <td style="text-align: left;"><strong><?php echo htmlspecialchars($item['name']); ?></strong></td>
+                                    <td class="product-name-cell"><strong><?php echo htmlspecialchars($item['name']); ?></strong></td>
 
                                     <?php if ($role === 'user'): ?>
-                                        <td style="color:#e67e22; font-weight:600;">🏪 <?php echo $vendorName; ?></td>
+                                        <td class="vendor-name-cell">🏪 <?php echo $vendorName; ?></td>
                                     <?php endif; ?>
 
-                                    <td style="color:#718096; font-family:monospace;"><?php echo htmlspecialchars($item['sku']); ?></td>
+                                    <td class="sku-cell-matrix"><?php echo htmlspecialchars($item['sku']); ?></td>
                                     <td><span class="size-badge-history"><?php echo htmlspecialchars($item['selected_size']); ?></span></td>
-                                    <td style="font-weight: 600;"><?php echo $item['quantity']; ?> pcs</td>
+                                    <td class="qty-weight-cell"><?php echo $item['quantity']; ?> pcs</td>
                                     <td class="stock-monitoring-status"><?php echo $stock_status_text; ?></td>
                                 </tr>
                             <?php endwhile; ?>

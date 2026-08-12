@@ -2174,6 +2174,42 @@ a.btn-secondary {
   font-size: 12px;
 }
 
+.order-time-accent {
+  color: #4f46e5 !important;
+  font-weight: 700 !important;
+}
+
+.meta-divider-span {
+  color: #cbd5e0 !important;
+  margin: 0 8px !important;
+}
+
+.delivery-badge-status {
+  font-weight: 700 !important;
+  color: #2cbd6c !important;
+}
+
+.buyer-email-link {
+  color: #2563eb !important;
+  font-weight: 600 !important;
+}
+
+.text-left-th {
+  text-align: left !important;
+}
+
+.product-name-cell {
+  text-align: left !important;
+}
+
+.vendor-name-cell {
+  color: #e67e22 !important;
+  font-weight: 600 !important;
+}
+
+.qty-weight-cell {
+  font-weight: 600 !important;
+}
 /* ==========================================================================  */
 #product_form {
   margin-top: 50px;
