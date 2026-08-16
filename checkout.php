@@ -84,15 +84,15 @@ foreach ($products as $product) {
 // Get the currency symbol for the order confirmation
 $currency_symbol = Currency::getSymbol($currency);
 
-// Set up shipping threshold parameters inspired by Ananas.mk marketplace
-$shipping_threshold = 30.00;
+// Set up shipping threshold parameters 
+$shipping_threshold = 50.00;
 $standard_shipping_rate = 3.00;
 
 if ($currency === 'MKD' || $currency === 'ден') {
-    $shipping_threshold = 1500.00;
+    $shipping_threshold = 2500.00;
     $standard_shipping_rate = 150.00;
 } elseif ($currency === 'EUR' || $currency === '€') {
-    $shipping_threshold = 25.00;
+    $shipping_threshold = 42.00;
     $standard_shipping_rate = 2.50;
 }
 

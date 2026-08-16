@@ -286,6 +286,26 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                 </div>
             </div>
         </header>
+        <!-- MARKETING PROMO TICKER: Dynamically adjusted based on active session currency logs -->
+        <?php
+        // Catch the active store currency layout from session memory registers
+        $current_store_currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'USD';
+
+        // Initialize the default fallback promo copy parameters
+        $promo_text_message = "Free shipping on all orders over $50! Add more premium items to your shopping cart and save on delivery checkout configurations!";
+
+        // Conditional logic block updating the layout copy text inline with currency selections
+        if ($current_store_currency === 'MKD' || $current_store_currency === 'ден') {
+            $promo_text_message = "Free shipping on all orders over 2500 MKD! Add more premium items to your shopping cart and save on delivery checkout configurations!";
+        } elseif ($current_store_currency === 'EUR' || $current_store_currency === '€') {
+            $promo_text_message = "Free shipping on all orders over 42 EUR! Add more premium items to your shopping cart and save on delivery checkout configurations!";
+        }
+        ?>
+        <div class="promo-ticker-banner">
+            <div class="ticker-text-wrap">
+                <span>🔥 SPECIAL PROMO OFFER: <?php echo $promo_text_message; ?> 🔥</span>
+            </div>
+        </div>
 
         <!-- Products are loaded here by appIndex.js -->
         <div class="productList">
