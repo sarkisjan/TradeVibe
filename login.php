@@ -3,7 +3,7 @@ session_start();
 require_once "includes/autoloader.php";
 
 // Hide PHP errors from users while still reporting them internally
-ini_set('display_errors', 0); 
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 // Connect to the database
@@ -20,8 +20,8 @@ if (!$conn) {
 
 // Handle the login form when it is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-// Get the email and password entered by the user
+
+    // Get the email and password entered by the user
     $raw_email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $raw_password = isset($_POST['password']) ? $_POST['password'] : '';
 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Escape the email before using it in the SQL query
         $email = mysqli_real_escape_string($conn, $raw_email);
-        
+
         // Find the user by email, even if the account is not verified yet
         $query = "SELECT * FROM `users` WHERE `email` = '$email' LIMIT 1";
         $result = mysqli_query($conn, $query);
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Check if the entered password matches the stored password
             if (password_verify($raw_password, $user['password'])) {
-                
+
                 // Check if the account has been verified
                 if (intval($user['is_verified']) !== 1) {
                     $error = "Your account has been registered successfully, but it is currently unverified! 
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     // Save the user's information in the session after successful login
                     $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_role'] = $user['role']; 
+                    $_SESSION['user_role'] = $user['role'];
                     $_SESSION['first_name'] = $user['first_name'];
                     $_SESSION['last_name'] = $user['last_name'];
                     $_SESSION['email'] = $user['email'];
@@ -83,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -90,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="styles.css">
 
 </head>
+
 <body id="bckgrnd">
 
     <div class="login-box">
@@ -97,14 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Show demo accounts that can be used for testing -->
         <div class="test-credentials-panel">
             <h4>🔐 Demo Environment Test Accounts</h4>
-            <div class="user-type-group"><span class="badge-role role-root">Root Admin</span><strong>Email:</strong> root@eshop.com | <strong>Pass:</strong> root123</div>
+
             <div class="user-type-group"><span class="badge-role role-admin">Seller 1</span><strong>Email:</strong> admin@eshop.com | <strong>Pass:</strong> admin123</div>
             <div class="user-type-group"><span class="badge-role role-admin">Seller 2</span><strong>Email:</strong> seller2@eshop.com | <strong>Pass:</strong> admin123</div>
             <div class="user-type-group"><span class="badge-role role-user">Customer 1</span><strong>Email:</strong> user@eshop.com | <strong>Pass:</strong> user123</div>
             <div class="user-type-group"><span class="badge-role role-user">Customer 2</span><strong>Email:</strong> buyer2@eshop.com | <strong>Pass:</strong> user123</div>
         </div>
-        
-        <?php if(!empty($error)): ?>
+
+        <?php if (!empty($error)): ?>
             <!-- Display the login error if one exists -->
             <div class="error-banner">⚠️ <?php echo $error; ?></div>
         <?php endif; ?>
@@ -114,11 +116,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
             <input type="submit" class="login-btn" value="SIGN IN">
         </form>
-        
+
         <p style="margin-top: 25px; font-size: 13px; color: #718096;">
             New to our shop? <a href="signup.php" style="color: #3498db; font-weight: bold; text-decoration: none;">Create an account here</a>
         </p>
     </div>
 
 </body>
+
 </html>
