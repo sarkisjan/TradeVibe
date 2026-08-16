@@ -109,8 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8">
-    <title>Edit Profile & Security - E-Shop</title>
+    <title>Edit Profile & Security - TradeVibe</title>
+    <link rel="icon" type="image" href="uploads/favicon.ico">
     <link rel="stylesheet" href="styles.css">
+
 
 </head>
 

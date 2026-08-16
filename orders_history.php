@@ -51,6 +51,7 @@ if ($role === 'admin' && isset($_GET['search_order_id']) && !empty($_GET['search
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management Tracking Matrix - TradeVibe</title>
+    <link rel="icon" type="image" href="uploads/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 
 </head>

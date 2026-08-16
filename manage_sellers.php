@@ -28,7 +28,7 @@ if (isset($_POST['delete_user'])) {
     // Remove the seller's products before deleting the user
     mysqli_query($conn, "DELETE FROM `producttable` WHERE `admin_id` = $uId");
     mysqli_query($conn, "DELETE FROM `users` WHERE `id` = $uId");
-    
+
     // Return to the user management page
     header("Location: manage_sellers.php");
     exit();
@@ -38,17 +38,17 @@ if (isset($_POST['delete_user'])) {
 if (isset($_POST['reset_pwd'])) {
     $uId = intval($_POST['user_id']);
     $raw_custom_password = isset($_POST['custom_password']) ? trim($_POST['custom_password']) : '';
-    
+
     // Make sure a new password was entered
     if ($raw_custom_password === '') {
         echo "<script>alert('Please type a password inside the input field layouts first!'); window.location.href='manage_sellers.php';</script>";
         exit();
     }
-    
+
     // Hash the new password before saving it
     $customHashed = password_hash($raw_custom_password, PASSWORD_DEFAULT);
     mysqli_query($conn, "UPDATE `users` SET `password` = '$customHashed' WHERE `id` = $uId");
-    
+
     // Show a message and return to the user management page
     echo "<script>alert('Password successfully changed and updated for this profile!'); window.location.href='manage_sellers.php';</script>";
     exit();
@@ -56,12 +56,15 @@ if (isset($_POST['reset_pwd'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global User Control Matrix - TradeVibe</title>
+    <link rel="icon" type="image" href="uploads/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body id="bckgrnd">
 
     <header>
@@ -87,7 +90,7 @@ if (isset($_POST['reset_pwd'])) {
         <div class="matrix-card">
             <h2>Global Registered Users Matrix</h2>
             <p>Managing system sellers, customers, and active account verification status logs. Deleting a seller account will automatically cascade and delete all products they have published inside the storefront inventory.</p>
-            
+
             <table class="matrix-table">
                 <thead>
                     <tr>
@@ -104,10 +107,10 @@ if (isset($_POST['reset_pwd'])) {
                 </thead>
                 <tbody>
                     <?php
-                   // Get all users except the root user
+                    // Get all users except the root user
                     $query = "SELECT * FROM `users` WHERE `role` != 'root' ORDER BY `id` ASC";
                     $res = mysqli_query($conn, $query);
-                    
+
                     // Show a message if there are no registered users
                     if (mysqli_num_rows($res) === 0):
                         echo "<tr><td colspan='9' style='color:gray;'>No registered users found inside the system infrastructure network.</td></tr>";
@@ -116,52 +119,53 @@ if (isset($_POST['reset_pwd'])) {
                         while ($user = mysqli_fetch_assoc($res)):
                             $badgeClass = ($user['role'] === 'admin') ? 'role-seller' : 'role-customer';
                             $roleLabel = ($user['role'] === 'admin') ? 'Seller' : 'Customer';
-                            
+
                             // Set the CSS class and text based on verification status
                             $statusClass = (intval($user['is_verified']) === 1) ? 'status-active' : 'status-pending';
                             $statusLabel = (intval($user['is_verified']) === 1) ? 'Verified' : 'Unverified';
                     ?>
-                        <tr>
-                            <td><strong>#<?php echo $user['id']; ?></strong></td>
-                            <td><span class="role-badge <?php echo $badgeClass; ?>"><?php echo $roleLabel; ?></span></td>
-                            <td><?php echo htmlspecialchars($user['username']); ?></td>
-                            <td><strong><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></strong></td>
-                            <td style="color:#4a5568;"><?php echo htmlspecialchars($user['email']); ?></td>
-                            
-                            <!-- Show the current account verification status -->
-                            <td><span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusLabel; ?></span></td>
-                            
-                            <!-- Allow the root user to manually verify an account -->
-                            <td>
-                                <?php if (intval($user['is_verified']) !== 1): ?>
-                                    <form method="POST" onsubmit="return confirm('Are you sure you want to manually verify and activate this account?');">
+                            <tr>
+                                <td><strong>#<?php echo $user['id']; ?></strong></td>
+                                <td><span class="role-badge <?php echo $badgeClass; ?>"><?php echo $roleLabel; ?></span></td>
+                                <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                <td><strong><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></strong></td>
+                                <td style="color:#4a5568;"><?php echo htmlspecialchars($user['email']); ?></td>
+
+                                <!-- Show the current account verification status -->
+                                <td><span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusLabel; ?></span></td>
+
+                                <!-- Allow the root user to manually verify an account -->
+                                <td>
+                                    <?php if (intval($user['is_verified']) !== 1): ?>
+                                        <form method="POST" onsubmit="return confirm('Are you sure you want to manually verify and activate this account?');">
+                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                            <button type="submit" name="approve_verify_user" class="matrix-btn btn-verify-action">✔ Verify Account</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span style="color:#a0aec0; font-size:12px; font-style:italic;">Already Active</span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- Allow the root user to change the user's password -->
+                                <td>
+                                    <form method="POST" onsubmit="return confirm('Are you sure you want to change this profile\'s password to the value specified inside the input box?');" style="display: flex; gap: 5px; justify-content: center; align-items: center;">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <button type="submit" name="approve_verify_user" class="matrix-btn btn-verify-action">✔ Verify Account</button>
+                                        <input type="text" name="custom_password" placeholder="Type new password" required style="width: 120px; padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; box-sizing: border-box; outline: none;">
+                                        <button type="submit" name="reset_pwd" class="matrix-btn btn-reset" style="padding: 6px 10px; white-space: nowrap;">Change</button>
                                     </form>
-                                <?php else: ?>
-                                    <span style="color:#a0aec0; font-size:12px; font-style:italic;">Already Active</span>
-                                <?php endif; ?>
-                            </td>
-                            
-                            <!-- Allow the root user to change the user's password -->
-                            <td>
-                                <form method="POST" onsubmit="return confirm('Are you sure you want to change this profile\'s password to the value specified inside the input box?');" style="display: flex; gap: 5px; justify-content: center; align-items: center;">
-                                    <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                    <input type="text" name="custom_password" placeholder="Type new password" required style="width: 120px; padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; box-sizing: border-box; outline: none;">
-                                    <button type="submit" name="reset_pwd" class="matrix-btn btn-reset" style="padding: 6px 10px; white-space: nowrap;">Change</button>
-                                </form>
-                            </td>
-                            
-                            
-                            <!-- Allow the root user to delete the account -->
-                            <td>
-                                <form method="POST" onsubmit="return confirm('CRITICAL WARNING: Are you sure you want to completely delete this seller account? All their products will be wiped out!');">
-                                    <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                    <button type="submit" name="delete_user" class="matrix-btn btn-delete">Delete Account</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endwhile; endif; ?>
+                                </td>
+
+
+                                <!-- Allow the root user to delete the account -->
+                                <td>
+                                    <form method="POST" onsubmit="return confirm('CRITICAL WARNING: Are you sure you want to completely delete this seller account? All their products will be wiped out!');">
+                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                        <button type="submit" name="delete_user" class="matrix-btn btn-delete">Delete Account</button>
+                                    </form>
+                                </td>
+                            </tr>
+                    <?php endwhile;
+                    endif; ?>
                 </tbody>
             </table>
         </div>
@@ -175,4 +179,5 @@ if (isset($_POST['reset_pwd'])) {
     </footer>
 
 </body>
+
 </html>

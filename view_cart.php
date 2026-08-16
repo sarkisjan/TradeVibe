@@ -34,6 +34,7 @@ $missing_size_detected = false;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart</title>
+    <link rel="icon" type="image" href="uploads/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 </head>
 

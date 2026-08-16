@@ -13,7 +13,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product - Premium E-Shop</title>
+    <title>Add Product - TradeVibe</title>
+    <link rel="icon" type="image" href="uploads/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -22,7 +23,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
         <header>
             <div class="navbar">
                 <!-- TradeVibe logo and link back to the home page. -->
-                <div class="brand-logo-zone" onclick="window.location.href='index.php';">                   
+                <div class="brand-logo-zone" onclick="window.location.href='index.php';">
                     <svg class="brand-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="16 3 21 3 21 8"></polyline>
                         <line x1="4" y1="20" x2="21" y2="4"></line>
@@ -162,7 +163,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                             <option value="XL">Extra Large (XL)</option>
                             <option value="Standard">Standard Size</option>
                         </select>
-                       
+
                         <span class="error-msg" id="size_attrError"></span>
                     </div>
 

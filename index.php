@@ -44,6 +44,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
     <meta property="og:url" content="http://localhost/TradeVibe/index.php">
     <meta property="og:image" content="http://localhost/TradeVibe/uploads/default-og-share.png">
 
+    <link rel="icon" type="image/svg+xml" href="uploads/favicon.svg?v=2.0">
     <link rel="stylesheet" href="styles.css">
 </head>
 
