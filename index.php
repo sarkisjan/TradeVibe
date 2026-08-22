@@ -220,71 +220,72 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                     </div>
 
                     <!-- Currency selector -->
+                    <!-- MULTI-CURRENCY CONTEXT SWITCHER: Pure semantic HTML layout synchronized via clean javascript events -->
                     <div class="currency-switcher">
                         <label for="currencySelect">Currency: </label>
-                        <select id="currencySelect" onchange="location = this.value;">
+                        <select id="currencySelect" class="currency-dropdown-select">
                             <option value="index.php?currency=USD" <?php echo ($selected_currency === 'USD') ? 'selected' : ''; ?>>USD ($)</option>
                             <option value="index.php?currency=EUR" <?php echo ($selected_currency === 'EUR') ? 'selected' : ''; ?>>EUR (€)</option>
                             <option value="index.php?currency=MKD" <?php echo ($selected_currency === 'MKD') ? 'selected' : ''; ?>>MKD (ден)</option>
                         </select>
                     </div>
 
-                    <!-- Navigation buttons -->
-                    <ul class="btn-list">
-                        <!-- Show the cart only for customers -->
-                        <?php if ($_SESSION['user_role'] === 'user'): ?>
-                            <li>
-                                <a href="view_cart.php" class="nav-cart-link">
-                                    <div class="cart-icon-wrapper">
-                                        <span class="cart-icon"></span>
-                                        <span id="cart-counter" class="cart-badge"><?php echo $cartCount; ?></span>
-                                    </div>
-                                </a>
-                            </li>
-                        <?php endif; ?>
-
-                        <!-- Show admin actions for admin and root users -->
-                        <?php if ($role === 'admin' || $role === 'root'): ?>
-
-                            <!-- Only admins can add products -->
-                            <?php if ($role === 'admin'): ?>
-                                <li><a href="add.php" class="btn btn-primary">ADD</a></li>
-                            <?php endif; ?>
-                            <li><button class="btn btn-danger mass_delete">MASS DELETE</button></li>
-                        <?php endif; ?>
-
-                        <!-- User profile menu -->
-                        <li class="profile-container">
-                            <button class="profile-icon-btn" id="profileBtn">👤</button>
-
-                            <div class="profile-dropdown" id="profileMenu">
-                                <!-- Display basic account information -->
-                                <p><strong>Account Type:</strong> <?php echo ($_SESSION['user_role'] === 'admin') ? 'Seller' : ($_SESSION['user_role'] === 'root' ? 'Root System Admin' : 'Customer'); ?></p>
-                                <p><strong>Full Name:</strong> <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></p>
-                                <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email']); ?></p>
-                                <p><strong>Address:</strong> <?php echo htmlspecialchars($_SESSION['address']); ?></p>
-                                <hr>
-
-                                <!-- Show different links based on the user's role -->
-                                <?php if ($_SESSION['user_role'] === 'root'): ?>
-                                    <a href="manage_sellers.php" class="root-matrix-link">⚙ Manage Sellers Matrix</a>
-                                <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
-                                    <!-- Нова чиста класа: vendor-matrix-link -->
-                                    <a href="orders_history.php" class="profile-edit-link vendor-matrix-link">📋 Global Orders Matrix</a>
-                                <?php elseif ($_SESSION['user_role'] === 'user'): ?>
-                                    <!-- Нова чиста класа: buyer-history-link -->
-                                    <a href="orders_history.php" class="profile-edit-link buyer-history-link">🛍 My Orders (History Log)</a>
-                                <?php endif; ?>
-
-
-                                <!-- Profile and logout links -->
-                                <a href="edit_profile.php" class="profile-edit-link" style="margin-top: 5px; display: block;">Edit Profile Info</a>
-                                <a href="logout.php" class="logout-link">Log Out</a>
-                            </div>
-
-                        </li>
-                    </ul>
                 </div>
+                <!-- Navigation buttons -->
+                <!-- NAVIGATION BUTTON LIST: Multi-role responsive action triggers configured dynamically -->
+
+                <ul class="btn-list">
+                    <!-- Show the cart only for verified customer session layers -->
+                    <?php if ($_SESSION['user_role'] === 'user'): ?>
+                        <li>
+                            <a href="view_cart.php" class="nav-cart-link">
+                                <div class="cart-icon-wrapper">
+                                    <span class="cart-icon"></span>
+                                    <span id="cart-counter" class="cart-badge"><?php echo $cartCount; ?></span>
+                                </div>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <!-- Show platform admin management actions for vendor and root supervisor profiles -->
+                    <?php if ($role === 'admin' || $role === 'root'): ?>
+                        <!-- Dedicated conditional barrier: Only verified sellers can append new catalog items -->
+                        <?php if ($role === 'admin'): ?>
+                            <li><a href="add.php" class="btn btn-primary">ADD</a></li>
+                        <?php endif; ?>
+                        <li><button class="btn btn-danger mass_delete">DELETE</button></li>
+                    <?php endif; ?>
+
+                </ul>
+
+                <!-- User profile interactive dropdown menu ecosystem -->
+                <span class="profile-container">
+                    <button class="profile-icon-btn" id="profileBtn">👤</button>
+
+                    <div class="profile-dropdown" id="profileMenu">
+                        <!-- Display basic account specification information logs -->
+                        <p><strong>Account Type:</strong> <?php echo ($_SESSION['user_role'] === 'admin') ? 'Seller' : ($_SESSION['user_role'] === 'root' ? 'Root System Admin' : 'Customer'); ?></p>
+                        <p><strong>Full Name:</strong> <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></p>
+                        <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email']); ?></p>
+                        <p><strong>Address:</strong> <?php echo htmlspecialchars($_SESSION['address']); ?></p>
+                        <hr>
+
+                        <!-- Render explicit control dashboard actions based on real-time security roles -->
+                        <?php if ($_SESSION['user_role'] === 'root'): ?>
+                            <a href="manage_sellers.php" class="root-matrix-link">⚙ Manage Sellers Matrix</a>
+                        <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
+                            <a href="orders_history.php" class="profile-edit-link vendor-matrix-link">📋 Global Orders Matrix</a>
+                        <?php elseif ($_SESSION['user_role'] === 'user'): ?>
+                            <a href="orders_history.php" class="profile-edit-link buyer-history-link">🛍 My Orders (History Log)</a>
+                        <?php endif; ?>
+
+                        <!-- Account profile adjustment operations layout bound to clean standalone classes -->
+                        <a href="edit_profile.php" class="profile-edit-link profile-info-block">Edit Profile Info</a>
+                        <a href="logout.php" class="logout-link">Log Out</a>
+                    </div>
+                </span>
+
+
             </div>
         </header>
         <!-- MARKETING PROMO TICKER: Dynamically adjusted based on active session currency logs -->

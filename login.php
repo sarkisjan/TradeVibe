@@ -103,9 +103,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h4>🔐 Demo Environment Test Accounts</h4>
 
             <div class="user-type-group"><span class="badge-role role-admin">Seller 1</span><strong>Email:</strong> admin@eshop.com | <strong>Pass:</strong> admin123</div>
-            <div class="user-type-group"><span class="badge-role role-admin">Seller 2</span><strong>Email:</strong> seller2@eshop.com | <strong>Pass:</strong> admin123</div>
+            <div class="user-type-group"><span class="badge-role role-admin">Seller 2</span><strong>Email:</strong> admin2@eshop.com | <strong>Pass:</strong> admin123</div>
             <div class="user-type-group"><span class="badge-role role-user">Customer 1</span><strong>Email:</strong> user@eshop.com | <strong>Pass:</strong> user123</div>
-            <div class="user-type-group"><span class="badge-role role-user">Customer 2</span><strong>Email:</strong> buyer2@eshop.com | <strong>Pass:</strong> user123</div>
+            <div class="user-type-group"><span class="badge-role role-user">Customer 2</span><strong>Email:</strong> user2@eshop.com | <strong>Pass:</strong> user123</div>
         </div>
 
         <?php if (!empty($error)): ?>

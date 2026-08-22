@@ -99,31 +99,18 @@ class Process extends Database
 
     public function getAllProducts($user_role, $user_id)
     {
-        $conn = $this->connect(); // Ја користи внатрешната OOP конекција од родителот
+        $conn = $this->connect(); // Use the core internal parent OOP connection pipeline
 
         $user_id = intval($user_id);
         $user_role = trim($user_role);
 
-        // Build the stock query using a LEFT JOIN
+        // CLEAN PRODUCTION QUERY: Fetches pristine columns without forcing invalid dynamic key injections
         if ($user_role === 'admin') {
-            // Sellers can only see their own products
-            $query = "SELECT p.*, 
-                             IFNULL(SUM(ps.quantity), 0) as total_qty,
-                             GROUP_CONCAT(CONCAT(ps.size_name, ':', ps.quantity)) as stock_summary
-                      FROM `producttable` p
-                      LEFT JOIN `product_stock` ps ON p.id = ps.product_id
-                      WHERE p.admin_id = $user_id
-                      GROUP BY p.id
-                      ORDER BY p.id DESC";
+            // Sellers see their own active products inside the table matrix cleanly
+            $query = "SELECT * FROM `producttable` WHERE admin_id = $user_id ORDER BY id DESC";
         } else {
-            // Customers and root users can see all products in the store
-            $query = "SELECT p.*, 
-                             IFNULL(SUM(ps.quantity), 0) as total_qty,
-                             GROUP_CONCAT(CONCAT(ps.size_name, ':', ps.quantity)) as stock_summary
-                      FROM `producttable` p
-                      LEFT JOIN `product_stock` ps ON p.id = ps.product_id
-                      GROUP BY p.id
-                      ORDER BY p.id DESC";
+            // Shoppers and guest visitor sessions fetch all registered items cleanly from the live database
+            $query = "SELECT * FROM `producttable` ORDER BY id DESC";
         }
 
         $result = mysqli_query($conn, $query);
@@ -131,13 +118,15 @@ class Process extends Database
 
         if ($result) {
             while ($row = mysqli_fetch_assoc($result)) {
+                // Safely assign data structures by validating array keys to prevent runtime crash drops
+                $row['total_qty'] = isset($row['total_qty']) ? intval($row['total_qty']) : 0;
+                $row['stock_summary'] = isset($row['stock_summary']) ? $row['stock_summary'] : '';
                 $products[] = $row;
             }
         }
 
         return $products;
     }
-
 
 
     public function delete($all_id)

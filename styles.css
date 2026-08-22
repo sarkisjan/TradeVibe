@@ -769,7 +769,10 @@
   display: block !important;
   margin-bottom: 8px !important;
 }
-
+.profile-info-block {
+  margin-top: 5px;
+  display: block;
+}
 /* ==========================================================================
    MARKETING PROMO TICKER BANNER (SCARCITY TICKER LAYOUT)
    ========================================================================== */
@@ -1347,10 +1350,10 @@ ul {
   top: 0 !important;
   left: 0 !important;
   width: 100% !important;
-  height: 70px !important; /* Фиксна висина за точна симетрија */
-  background-color: #ffffff !important; /* Чиста бела позадина */
-  z-index: 100000 !important; /* Секогаш лебди најгоре над продуктите и сликите */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important; /* Нежна сенка за убав е-комерц изглед */
+  height: 70px !important;
+  background-color: #ffffff !important;
+  z-index: 100000 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
   display: flex;
   align-items: center;
 }
@@ -1523,6 +1526,7 @@ a.btn-secondary {
   font-size: 1.2em;
   cursor: pointer;
   font-weight: bold;
+  margin-right: 10px;
 }
 /* ==========================================================================
    15. ПРЕМИУМ Е-КОМЕРЦ СТАЈЛИНГ ЗА ПРОФИЛНОТО ПАЃАЧКО МЕНИ (PROFILE DROPDOWN)
@@ -2367,4 +2371,53 @@ a.btn-secondary {
   font-style: italic !important;
   margin-top: 15px !important;
   font-family: sans-serif;
+}
+@media (max-width: 650px) {
+  .login-box {
+    width: 350px;
+  }
+
+  .hamburger-btn {
+    margin-right: 5px;
+  }
+  .brand-name-text {
+    font-size: 16px !important;
+  }
+  .brand-icon-svg {
+    display: none;
+  }
+  .btn-list {
+    flex-direction: column !important;
+
+    gap: 5px; /* Perfect spacing between buttons */
+  }
+  .btn {
+    height: 30px;
+    width: 65px;
+  }
+  .navbar {
+    gap: 10px;
+  }
+  .nav-left-wrapper {
+    justify-content: space-around;
+  }
+  .currency-switcher {
+    flex-direction: column;
+    margin-left: 10px !important;
+    width: 90px;
+  }
+}
+@media (max-width: 380px) {
+  .brand-name-text {
+    display: none;
+  }
+  .brand-icon-svg {
+    display: inline-block;
+  }
+  .currency-switcher label {
+    font-size: 10px !important;
+  }
+  .currency-switcher select {
+    font-size: 10px !important;
+  }
 }

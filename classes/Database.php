@@ -1,6 +1,5 @@
 
 <?php
-
 class Database
 {
     private $servername;
@@ -38,8 +37,11 @@ class Database
         $this->ordersTable     = "orders";
         $this->orderItemsTable = "order_items";
 
+
         // Connect to the MySQL server
         $conn = mysqli_connect($this->servername, $this->username, $this->password);
+
+
 
         if (!$conn) {
             $this->errors[] = "Connection failed: " . mysqli_connect_error();
