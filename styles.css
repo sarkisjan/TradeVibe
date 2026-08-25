@@ -1387,6 +1387,7 @@ ul {
   justify-content: flex-end !important; /* Ги турка сите копчиња во десниот ќош */
   margin-left: auto !important; /* Помошна сигурносна кочница во флекс систем */
   gap: 12px; /* Perfect spacing between buttons */
+  margin-right: 15px;
 }
 
 .btn {
@@ -1513,7 +1514,7 @@ a.btn-secondary {
 .profile-container {
   position: relative !important;
   display: inline-block !important;
-  margin-left: 15px;
+  margin: 15px 15px;
 }
 .profile-icon-btn {
   width: 40px;
@@ -1526,7 +1527,6 @@ a.btn-secondary {
   font-size: 1.2em;
   cursor: pointer;
   font-weight: bold;
-  margin-right: 10px;
 }
 /* ==========================================================================
    15. ПРЕМИУМ Е-КОМЕРЦ СТАЈЛИНГ ЗА ПРОФИЛНОТО ПАЃАЧКО МЕНИ (PROFILE DROPDOWN)
@@ -1951,6 +1951,8 @@ a.btn-secondary {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   min-height: 60vh;
   font-family: sans-serif;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cart-table {
@@ -2372,13 +2374,26 @@ a.btn-secondary {
   margin-top: 15px !important;
   font-family: sans-serif;
 }
+@media (max-width: 950px) {
+  .cart-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
 @media (max-width: 650px) {
   .login-box {
     width: 350px;
   }
-
+  .title {
+    font-size: 1.2em;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
   .hamburger-btn {
     margin-right: 5px;
+  }
+  .brand-logo-zone {
+    padding: 0 15px;
   }
   .brand-name-text {
     font-size: 16px !important;
@@ -2388,12 +2403,13 @@ a.btn-secondary {
   }
   .btn-list {
     flex-direction: column !important;
-
+    margin: 0px;
     gap: 5px; /* Perfect spacing between buttons */
   }
   .btn {
     height: 30px;
-    width: 65px;
+
+    padding: 0 10px;
   }
   .navbar {
     gap: 10px;
@@ -2406,8 +2422,49 @@ a.btn-secondary {
     margin-left: 10px !important;
     width: 90px;
   }
+  .order-history-container {
+    margin: 10px 15px !important;
+  }
+
+  .monitoring-panel h3 {
+    font-size: 14px;
+
+    margin-bottom: 10px;
+  }
+  .monitoring-input {
+    font-size: 12px;
+  }
+  .order-card-header {
+    display: inline-block;
+    font-size: 12px;
+  }
+  .order-receiver-name {
+    font-size: 12px;
+  }
+  .order-total-amount {
+    font-size: 14px;
+  }
+  .order-details-meta {
+    font-size: 11px;
+  }
+  .order-items-table {
+    font-size: 9px;
+  }
+  .order-items-table th,
+  .order-items-table td {
+    padding: 3px 4px;
+  }
+  .size-badge-history {
+    font-size: 9px;
+  }
 }
-@media (max-width: 380px) {
+@media (max-width: 420px) {
+  .brand-logo-zone {
+    padding: 0 5px;
+  }
+  .btn-primary {
+    font-size: 12px;
+  }
   .brand-name-text {
     display: none;
   }
@@ -2419,5 +2476,45 @@ a.btn-secondary {
   }
   .currency-switcher select {
     font-size: 10px !important;
+  }
+
+  .monitoring-panel h3 {
+    font-size: 12px;
+
+    margin-bottom: 10px;
+  }
+  .monitoring-input {
+    width: 150px;
+  }
+  .status-update-form {
+    width: 100%;
+    display: flex;
+  }
+  .status-select {
+    width: 100%;
+  }
+  .order-history-container {
+    width: 97%;
+    margin: auto !important;
+    text-align: center !important;
+  }
+  .order-card-header {
+    display: inline-block;
+    font-size: 10px;
+  }
+  .order-receiver-name {
+    font-size: 10px;
+  }
+  .order-total-amount {
+    font-size: 12px;
+  }
+  .order-details-meta {
+    font-size: 10px;
+  }
+  .order-items-table {
+    font-size: 8px;
+  }
+  .quick-edit-content-box {
+    width: 80%;
   }
 }
