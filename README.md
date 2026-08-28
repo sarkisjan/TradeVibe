@@ -27,6 +27,28 @@ This platform operates as a dynamic ecosystem supporting three distinct user aut
 
 ---
 
+## 🌐 Live Production Deployment & Demo Environment
+
+The application is fully configured, database-connected, and deployed to a live Linux production server for real-time testing and performance evaluation.
+
+👉 **Live Application Website Link:** [https://tradevibe.infinityfree.io/](https://tradevibe.infinityfree.io/)
+
+### 🔐 Verified Test Accounts (Demo Log Matrix)
+
+You can evaluate different multi-role authentication pipelines and control dashboards without creating a new profile, using the following sandbox environments:
+
+#### 💼 Vendor / Seller Profile (Inventory & Stock Admin Panel)
+
+- **Email Address:** `admin@eshop.com`
+- **Secure Password:** `admin123`
+
+#### 🛍 Customer / Shopper Profile (Cart Operations & Purchase Logs)
+
+- **Email Address:** `user@eshop.com`
+- **Secure Password:** `user123`
+
+---
+
 ## 📂 Database Entity Relationship Overview
 
 The storage layer enforces 1-to-Many strict relational data dependencies:
@@ -44,5 +66,5 @@ The storage layer enforces 1-to-Many strict relational data dependencies:
    ```bash
    git clone https://github.com/sarkisjan/TradeVibe
    ```
-2. Import the provided `tradevibe_backup.sql` file backup configuration directly inside your local phpMyAdmin dashboard panel
-3. Access the demo application using the embedded test environments specified within the live `login.php` preview console panel.
+2. Import the provided `tradevibe_backup.sql` database dump configuration file directly inside your local phpMyAdmin dashboard panel.
+3. Boot up XAMPP (Apache and MySQL modules) and access the sandbox deployment preview using the test accounts layout or create a clean system profile.
