@@ -71,7 +71,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 
         <!-- Show all products -->
         <div class="filter-section">
-            <ul class="subcat-list" style="margin: 0; padding: 0; list-style: none;">
+            <ul class="subcat-list active" style="margin: 0; padding: 0; list-style: none;">
                 <li class="allProducts" data-sub="global-all">🌐 All Products Marketplace</li>
             </ul>
         </div>
@@ -79,7 +79,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
         <div class="filter-section">
             <h3>Home & Garden</h3>
             <ul class="subcat-list" data-category="Home & Garden">
-                <li data-sub="all" class="active">All Home & Garden</li>
+                <li data-sub="all">All Home & Garden</li>
                 <li data-sub="Souvenirs">Souvenirs & Decor</li>
 
                 <!-- Furniture category with room submenu -->
@@ -113,7 +113,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
         <div class="filter-section">
             <h3>Sports & Recreation</h3>
             <ul class="subcat-list" data-category="Sports & Recreation">
-                <li data-sub="all" data-category="Sports & Recreation" class="active">All Sports</li>
+                <li data-sub="all" data-category="Sports & Recreation">All Sports</li>
                 <li data-sub="Supplements">Supplements (Vitamins, Proteins etc.)</li>
                 <li data-sub="Book">Books</li>
                 <li data-sub="Clothing">Sports Clothing</li>
@@ -374,7 +374,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                     </div>
                     <!-- Stock management for sellers -->
                     <div id="modalSellerStockSection" class="quick-edit-field-group" style="display: none; margin-top: 20px;">
-                        <h4 style="font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e0; padding-bottom: 5px;">📦 Stock Management System</h4>
+                        <h4>📦 Stock Management System</h4>
                         <div id="modalStockMatrixTableContainer"></div>
                     </div>
 

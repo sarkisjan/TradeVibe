@@ -104,13 +104,22 @@ class Process extends Database
         $user_id = intval($user_id);
         $user_role = trim($user_role);
 
-        // CLEAN PRODUCTION QUERY: Fetches pristine columns without forcing invalid dynamic key injections
+        // ST_MODE FIX: Relational subqueries utilizing integer CAST protocols to match records perfectly
         if ($user_role === 'admin') {
-            // Sellers see their own active products inside the table matrix cleanly
-            $query = "SELECT * FROM `producttable` WHERE admin_id = $user_id ORDER BY id DESC";
+            // Sellers see their own active products with accurate dynamic warehouse quantity summaries
+            $query = "SELECT p.*, 
+                             (SELECT IFNULL(SUM(ps.quantity), 0) FROM `product_stock` ps WHERE CAST(ps.product_id AS UNSIGNED) = CAST(p.id AS UNSIGNED)) as total_qty,
+                             (SELECT GROUP_CONCAT(CONCAT(ps.size_name, ':', ps.quantity)) FROM `product_stock` ps WHERE CAST(ps.product_id AS UNSIGNED) = CAST(p.id AS UNSIGNED)) as stock_summary
+                      FROM `producttable` p
+                      WHERE p.admin_id = $user_id
+                      ORDER BY p.id DESC";
         } else {
-            // Shoppers and guest visitor sessions fetch all registered items cleanly from the live database
-            $query = "SELECT * FROM `producttable` ORDER BY id DESC";
+            // Customers and root system operators fetch the comprehensive public catalog metrics cleanly
+            $query = "SELECT p.*, 
+                             (SELECT IFNULL(SUM(ps.quantity), 0) FROM `product_stock` ps WHERE CAST(ps.product_id AS UNSIGNED) = CAST(p.id AS UNSIGNED)) as total_qty,
+                             (SELECT GROUP_CONCAT(CONCAT(ps.size_name, ':', ps.quantity)) FROM `product_stock` ps WHERE CAST(ps.product_id AS UNSIGNED) = CAST(p.id AS UNSIGNED)) as stock_summary
+                      FROM `producttable` p
+                      ORDER BY p.id DESC";
         }
 
         $result = mysqli_query($conn, $query);
@@ -118,7 +127,7 @@ class Process extends Database
 
         if ($result) {
             while ($row = mysqli_fetch_assoc($result)) {
-                // Safely assign data structures by validating array keys to prevent runtime crash drops
+                // Safely assign data structures now that keys are guaranteed to arrive from subqueries
                 $row['total_qty'] = isset($row['total_qty']) ? intval($row['total_qty']) : 0;
                 $row['stock_summary'] = isset($row['stock_summary']) ? $row['stock_summary'] : '';
                 $products[] = $row;
@@ -127,6 +136,7 @@ class Process extends Database
 
         return $products;
     }
+
 
 
     public function delete($all_id)

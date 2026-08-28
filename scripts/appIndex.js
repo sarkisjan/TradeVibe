@@ -16,7 +16,7 @@ fetch("reading.php", {
   .then((response) => {
     // ENFORCED PRODUCTION REFACTOR: Pulling clean JSON stream objects directly from backend layers
     if (!response.ok) {
-      throw new Error("Outbound network routing transaction matrix failed");
+      throw new Error("Failed to load products.");
     }
     return response.json();
   })
@@ -28,7 +28,7 @@ fetch("reading.php", {
     setupFilterEventListeners();
   })
   .catch((error) => {
-    console.error("Infrastructure pipeline processing error caught:", error);
+    console.error("Error loading products:", error);
   });
 
 function filterAndRenderProducts() {
@@ -828,9 +828,7 @@ function setupFilterEventListeners() {
         .querySelectorAll(".subcat-list li")
         .forEach((el) => el.classList.remove("active"));
 
-      if (this.getAttribute("data-sub") !== "all") {
-        this.classList.add("active");
-      }
+      this.classList.add("active");
 
       filterAndRenderProducts();
     });
@@ -1109,6 +1107,24 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 // Handle sidebar, category, furniture, and profile menu actions
 document.addEventListener("DOMContentLoaded", () => {
+  // Set "All Products Marketplace" as the default active filter
+  window.activeSelectedCategoryTracker = "all";
+  window.activeSelectedSubcategoryTracker = "global-all";
+  window.selectedFurnitureRoom = "all";
+
+  // Remove the active state from all category items
+  document
+    .querySelectorAll(".subcat-list li")
+    .forEach((li) => li.classList.remove("active"));
+
+  // Set only "All Products Marketplace" as active
+  const allProductsItem = document.querySelector(
+    '.subcat-list li[data-sub="global-all"]',
+  );
+
+  if (allProductsItem) {
+    allProductsItem.classList.add("active");
+  }
   const hamburgerBtn = document.getElementById("hamburgerBtn");
   const closeMenuBtn = document.getElementById("closeMenuBtn");
   const sidebarMenu = document.getElementById("sidebarMenu");
