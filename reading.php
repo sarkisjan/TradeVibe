@@ -28,7 +28,7 @@ foreach ($products as $key => $product) {
 
         $products[$key]['display_price'] = '
             <span style="text-decoration: line-through; color: #718096; font-size: 14px; font-weight: normal; margin-right: 8px;">' . number_format($converted_original, 2) . $currency_symbol . '</span>
-            <span style="color: #ef4444; font-weight: 700;">' . number_format($converted_discounted, 2) . $currency_symbol . '</span>';
+            <span class="modal-price-discount-val">' . number_format($converted_discounted, 2) . $currency_symbol . '</span>';
 
         $products[$key]['raw_price_converted'] = $converted_discounted;
     } else {

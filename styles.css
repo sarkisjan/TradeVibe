@@ -981,7 +981,7 @@
 
 .modal-right-info {
   width: 50%;
-  padding: 40px;
+  padding: 35px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1082,6 +1082,12 @@
   font-size: 24px;
   font-weight: 700;
   color: #2cbd6c;
+}
+.modal-price-discount-val {
+  color: #ef4444;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
 }
 
 .modal-action-btn-zone {
@@ -2359,6 +2365,10 @@ a.btn-secondary {
   .cart-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  .modal-right-info {
+    width: 100%;
+    padding: 30px;
   }
 }
 @media (max-width: 650px) {

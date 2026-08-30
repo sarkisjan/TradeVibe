@@ -241,7 +241,22 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
                             <a href="view_cart.php" class="nav-cart-link">
                                 <div class="cart-icon-wrapper">
                                     <span class="cart-icon"></span>
-                                    <span id="cart-counter" class="cart-badge"><?php echo $cartCount; ?></span>
+                                    <span id="cart-counter" class="cart-badge">
+                                        <?php
+                                        // Check if the cart session matrix exists and is initialized as a valid array payload structure
+                                        if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+
+                                            // Extract all values from the 'qty' column inside the multidimensional cart matrix
+                                            $cart_quantities_array = array_column($_SESSION['cart'], 'qty');
+
+                                            // Mathematical aggregation: Compute the absolute sum of all gathered quantities and output the total pieces directly into the DOM
+                                            echo array_sum($cart_quantities_array);
+                                        } else {
+                                            // Fallback default boundary: Output zero if the shopper session log is empty or uninitialized
+                                            echo 0;
+                                        }
+                                        ?>
+                                    </span>
                                 </div>
                             </a>
                         </li>
