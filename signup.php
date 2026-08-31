@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
 
-        <form action="signup.php" method="POST">
+        <form class="register-form" action="signup.php" method="POST">
             <input type="text" name="username" placeholder="Username" required>
             <input type="text" name="first_name" placeholder="First Name" required>
             <input type="text" name="last_name" placeholder="Last Name" required>

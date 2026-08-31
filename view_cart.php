@@ -13,10 +13,18 @@ if (isset($_GET['action']) && $_GET['action'] === 'clear') {
     exit();
 }
 
-$product_ids = array_keys($cart_items);
+$product_ids = [];
 $products = [];
+// Collect all valid product IDs currently stored in the cart session
+foreach ($cart_items as $cartItem) {
+    if (is_array($cartItem) && isset($cartItem['product_id'])) {
+        $product_ids[] = intval($cartItem['product_id']);
+    }
+}
 
-// Fetch product details for items currently inside the cart session
+$product_ids = array_unique($product_ids);
+
+// Fetch product details for all products currently stored in the cart
 if (!empty($product_ids)) {
     $products = $process->getCartProducts($product_ids);
 }
@@ -104,43 +112,106 @@ $missing_size_detected = false;
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($products as $product):
-                            $id = $product['id'];
+                        <?php foreach ($cart_items as $cartKey => $cartItem):
 
-                            // Safely extract cart state properties
-                            $qty = isset($cart_items[$id]['qty']) ? $cart_items[$id]['qty'] : (is_array($cart_items[$id]) ? 1 : $cart_items[$id]);
-                            $size = isset($cart_items[$id]['size']) ? $cart_items[$id]['size'] : 'Standard';
-
-                            // Verify if size configuration is required (Clothing and Footwear)
-                            $subLower = isset($product['subcategory']) ? strtolower($product['subcategory']) : '';
-                            $isSizeRequired = in_array($subLower, ['shoes', 'clothing', 'summer', 'winter']);
-
-                            $size_display_html = "";
-                            if ($isSizeRequired && ($size === 'Standard' || empty($size) || $size === '')) {
-                                // Block action trigger flag if a required selection is missing
-                                $size_display_html = "<span class='size-error-badge'>⚠️ Not Selected</span>";
-                                $missing_size_detected = true; // Се активира кочницата!
-                            } else {
-                                $size_display_html = "<span class='size-badge'>" . htmlspecialchars($size) . "</span>";
+                            // Make sure this is a valid cart item
+                            if (!is_array($cartItem) || !isset($cartItem['product_id'])) {
+                                continue;
                             }
 
-                            // Clean price strings and calculate discount math variations
-                            $clean_price = str_replace(['$', ' ', 'den', 'EUR', '€'], '', $product['price']);
+                            // Get product ID, quantity and selected size from the cart item
+                            $id = intval($cartItem['product_id']);
+                            $qty = intval($cartItem['qty']);
+                            $size = isset($cartItem['size']) && $cartItem['size'] !== ''
+                                ? $cartItem['size']
+                                : 'Standard';
+
+                            // Find the product information returned from the database
+                            $product = null;
+
+                            foreach ($products as $p) {
+                                if (intval($p['id']) === $id) {
+                                    $product = $p;
+                                    break;
+                                }
+                            }
+
+                            // Skip invalid/missing products
+                            if (!$product) {
+                                continue;
+                            }
+
+                            // Verify if size configuration is required
+                            // for Clothing and Footwear products
+                            $subLower = isset($product['subcategory'])
+                                ? strtolower($product['subcategory'])
+                                : '';
+
+                            $isSizeRequired = in_array(
+                                $subLower,
+                                ['shoes', 'clothing', 'summer', 'winter']
+                            );
+
+                            $size_display_html = "";
+
+                            if (
+                                $isSizeRequired &&
+                                ($size === 'Standard' || empty($size))
+                            ) {
+
+                                // Block checkout if a required size is missing
+                                $size_display_html =
+                                    "<span class='size-error-badge'>⚠️ Not Selected</span>";
+
+                                $missing_size_detected = true;
+                            } else {
+
+                                $size_display_html =
+                                    "<span class='size-badge'>" .
+                                    htmlspecialchars($size) .
+                                    "</span>";
+                            }
+
+                            // Clean price string
+                            $clean_price = str_replace(
+                                ['$', ' ', 'den', 'EUR', '€'],
+                                '',
+                                $product['price']
+                            );
+
                             $item_base_price = floatval($clean_price);
+
+                            // Apply product discount
                             $discount = intval($product['discount']);
 
                             if ($discount > 0) {
-                                $item_base_price = $item_base_price - ($item_base_price * ($discount / 100));
+                                $item_base_price =
+                                    $item_base_price -
+                                    ($item_base_price * ($discount / 100));
                             }
 
-                            $converted_unit_price = Currency::convert($item_base_price, $currency);
+                            // Convert price to selected currency
+                            $converted_unit_price =
+                                Currency::convert($item_base_price, $currency);
+
+                            // Calculate subtotal for this specific
+                            // product + size combination
                             $subtotal = $converted_unit_price * $qty;
+
                             $total_price += $subtotal;
 
-                            $allImages = $product['image'] ? explode(',', $product['image']) : [];
-                            $firstImage = (!empty($allImages) && trim($allImages[0]) !== "") ? "uploads/" . $allImages[0] : "";
+                            // Product images
+                            $allImages = $product['image']
+                                ? explode(',', $product['image'])
+                                : [];
+
+                            $firstImage =
+                                (!empty($allImages) && trim($allImages[0]) !== '')
+                                ? "uploads/" . $allImages[0]
+                                : "";
+
                         ?>
-                            <tr id="row-<?php echo $id; ?>">
+                            <tr id="row-<?php echo htmlspecialchars($cartKey); ?>">
                                 <td>
                                     <div class="cart-img" style="background-image: url('<?php echo $firstImage; ?>');">
                                         <?php if ($firstImage === ''): ?>
@@ -157,7 +228,11 @@ $missing_size_detected = false;
                                 <td><span style="color:#ef4444; font-weight:700;"><?php echo number_format($converted_unit_price, 2) . $currency_symbol; ?></span></td>
 
                                 <td>
-                                    <select class="qty-dropdown" data-id="<?php echo $id; ?>">
+                                    <select
+                                        class="qty-dropdown"
+                                        data-id="<?php echo $id; ?>"
+                                        data-size="<?php echo htmlspecialchars($size); ?>"
+                                        data-cart-key="<?php echo htmlspecialchars($cartKey); ?>">
                                         <?php for ($i = 1; $i <= 10; $i++): ?>
                                             <option value="<?php echo $i; ?>" <?php echo ($i == $qty) ? 'selected' : ''; ?>>
                                                 <?php echo $i; ?>
@@ -170,7 +245,11 @@ $missing_size_detected = false;
                                     <?php echo number_format($subtotal, 2) . $currency_symbol; ?>
                                 </td>
                                 <td>
-                                    <button class="remove-item-btn" data-id="<?php echo $id; ?>">REMOVE</button>
+                                    <button
+                                        class="remove-item-btn"
+                                        data-id="<?php echo $id; ?>"
+                                        data-size="<?php echo htmlspecialchars($size); ?>"
+                                        data-cart-key="<?php echo htmlspecialchars($cartKey); ?>">REMOVE</button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -269,77 +348,181 @@ $missing_size_detected = false;
     </div>
 
     <script>
+        // Store the currently selected currency symbol for JavaScript calculations
         const currencySymbol = "<?php echo $currency_symbol; ?>";
 
         document.addEventListener("DOMContentLoaded", () => {
 
-            // 1. АЖУРИРАЊЕ НА КОЛИЧИНА ПРЕКУ DROPDOWN МЕНИТО
+            //  Handle quantity changes through the quantity dropdown
             document.querySelectorAll('.qty-dropdown').forEach(dropdown => {
-                dropdown.addEventListener('change', function() {
-                    const productId = this.getAttribute('data-id');
-                    const newQty = parseInt(this.value);
-                    const row = document.getElementById(`row-${productId}`);
-                    const subtotalCell = row.querySelector('.subtotal-cell');
-                    const price = parseFloat(subtotalCell.getAttribute('data-price'));
 
-                    const xhttp = new XMLHttpRequest();
-                    xhttp.open("POST", "cart_handler.php", true);
-                    xhttp.setRequestHeader('Content-Type', 'application/json');
+                dropdown.addEventListener('change', function() {
+
+                    const productId =
+                        this.getAttribute('data-id');
+
+                    const cartKey =
+                        this.getAttribute('data-cart-key');
+
+                    const newQty =
+                        parseInt(this.value);
+
+                    const row =
+                        document.getElementById(
+                            `row-${cartKey}`
+                        );
+
+                    const subtotalCell =
+                        row.querySelector('.subtotal-cell');
+
+                    const price =
+                        parseFloat(
+                            subtotalCell.getAttribute('data-price')
+                        );
+
+                    const xhttp =
+                        new XMLHttpRequest();
+
+                    xhttp.open(
+                        "POST",
+                        "cart_handler.php",
+                        true
+                    );
+
+                    xhttp.setRequestHeader(
+                        'Content-Type',
+                        'application/json'
+                    );
 
                     xhttp.onreadystatechange = function() {
-                        if (this.readyState == 4 && this.status == 200) {
-                            const res = JSON.parse(this.response);
+
+                        if (
+                            this.readyState === 4 &&
+                            this.status === 200
+                        ) {
+
+                            const res =
+                                JSON.parse(this.response);
+
                             if (res.success) {
-                                const newSubtotal = price * newQty;
-                                subtotalCell.innerText = newSubtotal.toFixed(2) + currencySymbol;
+
+                                // Use the server-confirmed quantity when available
+                                const actualQty =
+                                    res.quantity || newQty;
+
+                                const newSubtotal =
+                                    price * actualQty;
+
+                                subtotalCell.innerText =
+                                    newSubtotal.toFixed(2) +
+                                    currencySymbol;
+
+                                // Recalculate the complete cart total
                                 recalculateTotal();
+
+                            } else {
+
+                                /*
+                                 * If server rejected the quantity,
+                                 * restore the actual quantity.
+                                 */
+                                if (res.quantity) {
+                                    dropdown.value =
+                                        res.quantity;
+                                }
+
+                                alert(res.message);
                             }
                         }
                     };
+
+                    // Send the quantity update request to the cart handler
                     xhttp.send(JSON.stringify({
                         action: 'update',
                         product_id: productId,
+                        cart_key: cartKey,
                         quantity: newQty
                     }));
                 });
             });
 
-            // 2. БРИШЕЊЕ НА ПРОИЗВОД ОД КОШНИЧКАТА (REMOVE КОПЧЕ)
+            // Handle product removal from the shopping cart
             document.addEventListener('click', function(event) {
-                if (event.target && event.target.classList.contains('remove-item-btn')) {
-                    const productId = event.target.getAttribute('data-id');
+
+                if (
+                    event.target &&
+                    event.target.classList.contains('remove-item-btn')
+                ) {
+
+                    const productId =
+                        event.target.getAttribute('data-id');
+
+                    const cartKey =
+                        event.target.getAttribute('data-cart-key');
 
                     const xhttp = new XMLHttpRequest();
+
                     xhttp.open("POST", "cart_handler.php", true);
-                    xhttp.setRequestHeader('Content-Type', 'application/json');
+
+                    xhttp.setRequestHeader(
+                        'Content-Type',
+                        'application/json'
+                    );
 
                     xhttp.onreadystatechange = function() {
-                        if (this.readyState == 4 && this.status == 200) {
-                            const res = JSON.parse(this.response);
-                            if (res.success) {
-                                const rowToRemove = document.getElementById(`row-${productId}`);
-                                if (rowToRemove) rowToRemove.remove();
 
-                                if (document.querySelectorAll('.qty-dropdown').length === 0) {
+                        if (
+                            this.readyState === 4 &&
+                            this.status === 200
+                        ) {
+
+                            const res =
+                                JSON.parse(this.response);
+
+                            if (res.success) {
+
+                                // Remove the corresponding product row from the page
+                                const rowToRemove =
+                                    document.getElementById(
+                                        `row-${cartKey}`
+                                    );
+
+                                if (rowToRemove) {
+                                    rowToRemove.remove();
+                                }
+
+                                // Reload the page when the cart becomes empty
+                                if (
+                                    document.querySelectorAll(
+                                        '.qty-dropdown'
+                                    ).length === 0
+                                ) {
+
                                     window.location.reload();
+
                                 } else {
+
+                                    // Recalculate the total after removing an item
                                     recalculateTotal();
                                 }
                             }
                         }
                     };
+
+                    // Send the product removal request to the cart handler
                     xhttp.send(JSON.stringify({
                         action: 'remove',
-                        product_id: productId
+                        product_id: productId,
+                        cart_key: cartKey
                     }));
                 }
             });
-
-            // 3. ПАМЕТЕН КОНТРОЛЕН ТРАКЕР ЗА CHECKOUT CONFIRM ПРОЗОРЕЦОТ
+            // Handle the checkout confirmation modal
             const checkoutModal = document.getElementById('checkoutConfirmModal');
             const proceedBtn = document.querySelector('.checkout-btn:not(.disabled-btn)');
             const closeCheckoutBtn = document.getElementById('closeCheckoutModalBtn');
 
+            // Open the checkout confirmation modal
             if (proceedBtn && checkoutModal) {
                 proceedBtn.removeAttribute('href');
                 proceedBtn.addEventListener('click', (e) => {
@@ -348,13 +531,14 @@ $missing_size_detected = false;
                 });
             }
 
+            // Close the checkout confirmation modal
             if (closeCheckoutBtn && checkoutModal) {
                 closeCheckoutBtn.addEventListener('click', () => {
                     checkoutModal.style.display = 'none'; // Се сокрива безбедно
                 });
             }
 
-            // 4. ДИНАМИЧНА РЕКАЛКУЛАЦИЈА НА ВКУПНАТА СУМА НА ЕКРАНОТ
+            // Dynamically recalculate the total amount displayed in the cart
             function recalculateTotal() {
                 let total = 0;
                 document.querySelectorAll('.subtotal-cell').forEach(cell => {

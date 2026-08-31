@@ -264,10 +264,17 @@ function filterAndRenderProducts() {
 
   setupCheckboxListeners();
 }
+
 // Handle Add to Cart button clicks
 document.addEventListener("click", function (event) {
   if (event.target && event.target.classList.contains("add-to-cart-btn")) {
     const productId = event.target.getAttribute("data-id");
+
+    // Determine whether this is a direct-add product.
+    // Direct-add products do NOT require size selection.
+    const isDirectAdd = event.target.classList.contains("direct-add-btn");
+
+    const originButton = event.target;
 
     const sizeTrackerCheck = document.getElementById(
       "modalSelectedSizeTracker",
@@ -275,29 +282,37 @@ document.addEventListener("click", function (event) {
 
     const sizeWrapperCheck = document.getElementById("modalSizeWrapper");
 
-    // Require a size when the size selector is visible
-    if (
-      sizeWrapperCheck &&
-      window.getComputedStyle(sizeWrapperCheck).display === "block"
-    ) {
-      if (sizeTrackerCheck && sizeTrackerCheck.value.trim() === "") {
-        alert(
-          "Please select an available size configuration before adding this product to your cart!",
-        );
-        return;
+    let selectedSizeValue = "Standard";
+
+    /*
+     * IMPORTANT:
+     * Direct-add products must completely bypass the modal size validation.
+     *
+     * The modal size wrapper may still be display:block in the DOM after
+     * closing a previous size-based product modal. Therefore, checking only
+     * modalSizeWrapper visibility would incorrectly force size selection
+     * for products that do not require a size.
+     */
+    if (!isDirectAdd) {
+      // Products added from the modal may require a size.
+      if (
+        sizeWrapperCheck &&
+        window.getComputedStyle(sizeWrapperCheck).display === "block"
+      ) {
+        if (!sizeTrackerCheck || sizeTrackerCheck.value.trim() === "") {
+          alert(
+            "Please select an available size configuration before adding this product to your cart!",
+          );
+          return;
+        }
+
+        selectedSizeValue = sizeTrackerCheck.value.trim();
+      } else {
+        // Modal product without size configuration.
+        selectedSizeValue = "Standard";
       }
-    }
-
-    let selectedSizeValue = sizeTrackerCheck
-      ? sizeTrackerCheck.value
-      : "Standard";
-
-    const isDirectAdd = event.target.classList.contains("direct-add-btn");
-
-    const originButton = event.target;
-
-    // Direct add buttons are used for products without size selection
-    if (isDirectAdd) {
+    } else {
+      // Direct-add products always use the Standard configuration.
       selectedSizeValue = "Standard";
     }
 
@@ -308,74 +323,89 @@ document.addEventListener("click", function (event) {
 
     req.onreadystatechange = function () {
       if (this.readyState === 4 && this.status === 200) {
-        const res = JSON.parse(this.response);
+        try {
+          const res = JSON.parse(this.response);
 
-        if (res.success) {
-          const counterElement = document.getElementById("cart-counter");
+          if (res.success) {
+            const counterElement = document.getElementById("cart-counter");
 
-          const cartIconWrapper = document.querySelector(".cart-icon-wrapper");
+            const cartIconWrapper =
+              document.querySelector(".cart-icon-wrapper");
 
-          // Play the cart notification and show the flying animation
-          if (isDirectAdd && cartIconWrapper) {
-            const audioNotification = new Audio("https://mixkit.co");
+            // Play the cart notification and show the flying animation
+            if (isDirectAdd && cartIconWrapper) {
+              const audioNotification = new Audio("https://mixkit.co");
 
-            audioNotification.volume = 0.4;
+              audioNotification.volume = 0.4;
 
-            audioNotification.play().catch(() => {
-              console.log("Audio notification could not be played.");
-            });
+              audioNotification.play().catch(() => {
+                console.log("Audio notification could not be played.");
+              });
 
-            // Get the position of the button and cart icon
-            const btnRect = originButton.getBoundingClientRect();
+              // Get the position of the button and cart icon
+              const btnRect = originButton.getBoundingClientRect();
 
-            const cartRect = cartIconWrapper.getBoundingClientRect();
+              const cartRect = cartIconWrapper.getBoundingClientRect();
 
-            // Create the animation element at the button position
-            const ball = document.createElement("div");
+              // Create the animation element at the button position
+              const ball = document.createElement("div");
 
-            ball.className = "flying-cart-ball";
+              ball.className = "flying-cart-ball";
 
-            ball.style.top = `${btnRect.top + btnRect.height / 2 - 8}px`;
+              ball.style.top = `${btnRect.top + btnRect.height / 2 - 8}px`;
 
-            ball.style.left = `${btnRect.left + btnRect.width / 2 - 8}px`;
+              ball.style.left = `${btnRect.left + btnRect.width / 2 - 8}px`;
 
-            document.body.appendChild(ball);
+              document.body.appendChild(ball);
 
-            // Move the animation element toward the cart icon
-            setTimeout(() => {
-              ball.style.top = `${cartRect.top + cartRect.height / 2 - 8}px`;
+              // Move the animation element toward the cart icon
+              setTimeout(() => {
+                ball.style.top = `${cartRect.top + cartRect.height / 2 - 8}px`;
 
-              ball.style.left = `${cartRect.left + cartRect.width / 2 - 8}px`;
+                ball.style.left = `${cartRect.left + cartRect.width / 2 - 8}px`;
 
-              ball.style.transform = "scale(0.2)";
-            }, 40);
+                ball.style.transform = "scale(0.2)";
+              }, 40);
 
-            // Update the cart counter and animate the cart icon
-            setTimeout(() => {
+              // Update the cart counter and animate the cart icon
+              setTimeout(() => {
+                if (counterElement) {
+                  counterElement.innerText = res.cart_count;
+                }
+
+                cartIconWrapper.classList.add("cart-pulse-active");
+
+                ball.remove();
+
+                setTimeout(() => {
+                  cartIconWrapper.classList.remove("cart-pulse-active");
+                }, 400);
+              }, 700);
+            } else {
               if (counterElement) {
                 counterElement.innerText = res.cart_count;
               }
 
-              cartIconWrapper.classList.add("cart-pulse-active");
+              const viewModalToClose =
+                document.getElementById("productViewModal");
 
-              ball.remove();
+              if (viewModalToClose) {
+                viewModalToClose.style.display = "none";
+              }
 
-              setTimeout(() => {
-                cartIconWrapper.classList.remove("cart-pulse-active");
-              }, 400);
-            }, 700);
+              // Reset the selected modal size after successful modal add.
+              if (sizeTrackerCheck) {
+                sizeTrackerCheck.value = "";
+              }
+            }
           } else {
-            if (counterElement) {
-              counterElement.innerText = res.cart_count;
-            }
-
-            const viewModalToClose =
-              document.getElementById("productViewModal");
-
-            if (viewModalToClose) {
-              viewModalToClose.style.display = "none";
-            }
+            alert(res.message || "Unable to add the product to the cart.");
           }
+        } catch (error) {
+          console.error("Invalid server response:", this.response);
+          console.error(error);
+
+          alert("An unexpected server response was received.");
         }
       }
     };
